@@ -1,0 +1,92 @@
+{
+	"controllers": {
+		"auth": {
+			"signin": {
+				"errors": {
+					"missing_credentials": "Por favor, preencha os campos de telefone e senha.",
+					"user_not_found": "Usuário não encontrado.",
+					"invalid_password": "Senha inválida."
+				}
+			},
+			"authenticate": {
+				"errors": {
+					"no_token_provided": "Nenhum token de autenticação fornecido.",
+					"invalid_token": "Falha ao autenticar o token."
+				}
+			},
+			"send_validation_token": {
+				"message": "Caramelo: Seu código de validação é: {{{code}}}."
+			},
+			"signup": {
+				"errors": {
+					"invalid_role": "O campo role deve ser um dos seguintes: {{{roles}}}.",
+					"phone_already_in_use": "O telefone {{{phone}}} já está em uso.",
+					"email_already_in_use": "O e-mail {{{email}}} já está em uso.",
+					"company_already_in_use": "O documento {{{document}}} já está em uso."
+				}
+			},
+			"authorize": {
+				"errors": {
+					"forbidden": "Não autorizado."
+				}
+			},
+			"validate_account": {
+				"errors": {
+					"expired_token": "O token de validação de conta expirou.",
+					"invalid_token": "O token de validação de conta é inválido.",
+					"user_not_found": "Usuário não encontrado.",
+					"user_not_pending": "Usuário não consta como pendente.",
+					"missing_phone": "Telefone não enviado.",
+					"missing_token": "Token não enviado."
+				},
+				"success": "Conta validada com sucesso."
+			},
+			"forgot_password": {
+				"errors": {
+					"user_not_found": "Usuário não encontrado.",
+					"missing_phone": "Telefone não enviado.",
+					"missing_password": "Senha não enviada.",
+					"invalid_token": "Token inválido.",
+					"expired_token": "Token expirado.",
+					"missing_token": "Token não enviado."
+				},
+				"success": "Sucesso"
+			}
+		},
+		"companies": {
+			"explore": {
+				"errors": {
+					"invalid_coordinates": "Coordenadas inválidas."
+				}
+			}
+		}
+	},
+	"general": {
+		"success": {
+			"item_deleted": "Item excluído com sucesso."
+		},
+		"errors": {
+			"item_not_found": "Item não encontrado.",
+			"forbidden": "Não autorizado.",
+			"bsonerror": "{{{field}}} está num formato inválido.",
+			"field_required": "{{{field}}} é obrigatório.",
+			"already_in_use": "{{{field}}} já está em uso."
+		}
+	},
+	"email": {
+		"trial_request": {
+			"success": "Mensagem enviada com sucesso.",
+			"subject": "Nova empresa interessada no Caramelo."
+		}
+	},
+	"utils": {
+		"validation": {
+			"email": {
+				"invalid": "O e-mail informado é inválido."
+			},
+			"document": {
+				"invalid": "O documento informado é inválido - Não é um CPF nem um CNPJ."
+			}
+		}
+	}
+}

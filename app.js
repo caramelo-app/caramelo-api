@@ -1,0 +1,71 @@
+// Load environment variables
+require("dotenv").config();
+
+// Load modules
+const express = require("express");
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+const slowDown = require("express-slow-down");
+const mongoose = require("mongoose");
+const bp = require("body-parser");
+const { I18n } = require("i18n");
+
+// Load i18n (Localization)
+const i18n = new I18n({
+    locales: ["pt_BR"],
+    directory: __dirname + "/locales",
+    defaultLocale: "pt_BR",
+    objectNotation: true
+});
+
+// Rate Limiter (Safety)
+const rateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Speed Limiter (Safety)
+const speedLimiter = slowDown({
+    windowMs: 15 * 60 * 1000,
+    delayAfter: 100,
+    delayMs: 500
+});
+
+// Load database
+const mongoString = process.env.DATABASE_URL;
+mongoose.connect(mongoString);
+const database = mongoose.connection;
+
+database.on("error", (error) => {
+    console.log(error)
+})
+
+database.once("connected", () => {
+    console.log("Database Connected");
+});
+
+// Load routes
+const routes = require("./routes");
+
+// Load express server
+const app = express();
+
+// CORS
+app.use(cors());
+app.use((req, res, next) => {
+    res.set("Referrer-Policy", "same-origin");
+    next();
+});
+
+app.use(rateLimiter);
+app.use(speedLimiter);
+app.use(i18n.init);
+app.use(bp.json());
+app.use(bp.urlencoded({ extended: true }));
+app.use("/api", routes);
+
+app.listen(3001, () => {
+    console.log(`Running on port ${3001}`)
+});

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validate user</title>
+</head>
+
+<body style="background:#f9f8fa; padding:3em;">
+    {{>header}}
+    <div
+        style="padding:3em; width:40em; margin:0 auto; background:#FFF; border:1px solid #ebe7ef; border-radius:2em; text-align:center;">
+        <div>
+            <img src="https://i.imgur.com/mNSjiDM.png" height="200" />
+            <h1 style="color:#272e4f; font-size:2em;">Valide sua conta no Caramelo</h1>
+            <p style="color:#272e4f; font-size:1.2em; line-height:1.8em; margin-bottom:3em;">Agradecemos seu cadastro no
+                Caramelo! Para tornar nosso app um ambiente mais seguro, pedimos que todos os usuários validem seu
+                cadastro. Para isso, basta clicar no botão abaixo e usar!</p>
+            <p>Caso você não tenha se cadastrado, pode ser que tenham utilizado seu e-mail. Neste caso, você pode apenas
+                ignorar, ou nos enviar uma mensagem em nosso site para removermos seu e-mail de nossa base.</p>
+            <a style="display:inline-block; padding:1.5em; border-radius:2em; color:#FFF; font-size:1.3em; text-decoration:none; font-weight:bold; background:#272e4f;"
+                href={{validateToken}} target="_blank" title="Link externo: Validar Caramelo">Valide sua conta</a>
+        </div>
+    </div>
+    {{>footer}}
+</body>
+
+</html>
