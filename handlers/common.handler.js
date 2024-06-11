@@ -17,7 +17,7 @@ methods.list = async function (options, model, callback) {
     let projection = options.projection || {};
     let populate = options.populate || "";
 
-    model.find(options.filter, projection, {
+    await model.find(options.filter, projection, {
         collation: collation
     })
         .sort(sort)
@@ -48,7 +48,7 @@ methods.read = async function (options, model, callback) {
     let populate = options.populate || "";
     let collation = options.collation || {};
 
-    model.findOne(options.filter, projection, {
+    await model.findOne(options.filter, projection, {
         collation: collation
     })
         .sort(sort)
@@ -78,9 +78,10 @@ methods.create = async function (options, model, callback) {
 
     let item = new model(options.data);
 
-    await item.save().then((res) => {
-        return callback(null, res);
-    })
+    await item.save()
+        .then((res) => {
+            return callback(null, res);
+        })
         .catch((err) => {
             return callback(err, null);
         });
@@ -128,7 +129,7 @@ methods.update = async function (options, model, callback) {
  */
 methods.delete = async function (options, model, callback) {
 
-    model.deleteMany(options.filter)
+    await model.deleteMany(options.filter)
         .then((res) => {
             return callback(null, { message: res.__("general.success.item_deleted") });
         })
@@ -147,14 +148,15 @@ methods.delete = async function (options, model, callback) {
  */
 methods.aggregate = async function (options, model, callback) {
 
-    model.aggregate(options).then((res) => {
-        if (res) {
-            return callback(null, res);
-        }
-        else {
-            return callback({ message: res.__("general.errors.item_not_found") }, null);
-        }
-    })
+    await model.aggregate(options)
+        .then((res) => {
+            if (res) {
+                return callback(null, res);
+            }
+            else {
+                return callback({ message: res.__("general.errors.item_not_found") }, null);
+            }
+        })
         .catch((err) => {
             return callback(err, null);
         });
@@ -170,14 +172,15 @@ methods.aggregate = async function (options, model, callback) {
  */
 methods.countDocuments = async function (options, model, callback) {
 
-    model.countDocuments(options.filter).then((res) => {
-        if (res) {
-            return callback(null, res);
-        }
-        else {
-            return callback({ message: res.__("general.errors.item_not_found") }, null);
-        }
-    })
+    await model.countDocuments(options.filter)
+        .then((res) => {
+            if (res) {
+                return callback(null, res);
+            }
+            else {
+                return callback({ message: res.__("general.errors.item_not_found") }, null);
+            }
+        })
         .catch((err) => {
             return callback(err, null);
         });

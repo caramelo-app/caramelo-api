@@ -6,12 +6,12 @@ const methods = module.exports = {};
  * Sends an SMS message using Amazon Simple Notification Service (SNS).
  * This method handles setup and sending of the SMS, including configuration of message attributes like SMS type.
  * @param {Object} options - Contains all the necessary information to send an SMS.
- *   @param {string} options.message - The message body of the SMS.
- *   @param {string} options.phoneNumber - The recipient's phone number in E.164 format.
- *   @param {string} [options.smsType="Transactional"] - The type of SMS to be sent; can be "Transactional" or "Promotional".
+ * @param {string} options.message - The message body of the SMS.
+ * @param {string} options.phoneNumber - The recipient's phone number in E.164 format.
+ * @param {string} [options.smsType="Transactional"] - The type of SMS to be sent; can be "Transactional" or "Promotional".
  * @param {Function} callback - Callback function to handle the response or error after attempting to send the SMS.
- *   @param {Error} callback.error - Error object if an error occurs.
- *   @param {string} callback.result - Success message if the SMS is sent successfully.
+ * @param {Error} callback.error - Error object if an error occurs.
+ * @param {string} callback.result - Success message if the SMS is sent successfully.
  */
 methods.sendSMS = async (options, callback) => {
 

@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 const bp = require("body-parser");
 const { I18n } = require("i18n");
 
-// Load i18n (Localization)
+// Load i18n
 const i18n = new I18n({
     locales: ["pt_BR"],
     directory: __dirname + "/locales",
@@ -18,7 +18,7 @@ const i18n = new I18n({
     objectNotation: true
 });
 
-// Rate Limiter (Safety)
+// Rate Limiter
 const rateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -26,7 +26,7 @@ const rateLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-// Speed Limiter (Safety)
+// Speed Limiter
 const speedLimiter = slowDown({
     windowMs: 15 * 60 * 1000,
     delayAfter: 100,
