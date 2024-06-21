@@ -8,6 +8,7 @@ const rateLimit = require("express-rate-limit");
 const slowDown = require("express-slow-down");
 const mongoose = require("mongoose");
 const bp = require("body-parser");
+const helmet = require('helmet');
 const { I18n } = require("i18n");
 
 // Load i18n
@@ -53,12 +54,17 @@ const routes = require("./routes");
 const app = express();
 
 // CORS
-app.use(cors());
+const corsOptions = {
+    origin: 'http://localhost:3000',
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 app.use((req, res, next) => {
     res.set("Referrer-Policy", "same-origin");
     next();
 });
 
+app.use(helmet());
 app.use(rateLimiter);
 app.use(speedLimiter);
 app.use(i18n.init);

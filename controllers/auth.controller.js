@@ -163,6 +163,14 @@ methods.signin = function (req, res) {
         return res.status(400).json({ message: res.__("controllers.auth.signin.errors.missing_credentials") });
     }
 
+    // We need to sanitize the phone number to get only the numbers
+    // And if there's no 55 in the beginning and theres only 9 numbers, we need to add 55 at the beginning
+    req.body.phone = req.body.phone.replace(/\D/g, "");
+
+    if (req.body.phone.length === 11 && !req.body.phone.startsWith("55")) {
+        req.body.phone = "55" + req.body.phone;
+    }
+
     // We must get the user from the database
     const options = getAuthData({ req: req });
 

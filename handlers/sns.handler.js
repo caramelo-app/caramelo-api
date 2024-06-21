@@ -50,11 +50,9 @@ methods.sendSMS = async (options, callback) => {
 
     try {
         const data = await sns.send(new PublishCommand(params));
-        console.log("SMS enviado com sucesso:", data);
         return callback(null, "SMS enviado com sucesso");
     }
     catch (err) {
-        console.error("Erro ao enviar SMS:", err);
         return callback(err);
     }
 };
