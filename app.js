@@ -53,9 +53,33 @@ const routes = require("./routes");
 // Load express server
 const app = express();
 
+// Logger middleware
+app.use((req, res, next) => {
+    if (req.method !== 'OPTIONS') {
+        const now = new Date();
+        const formattedDate = now.toISOString();
+        const { method, originalUrl } = req;
+
+        res.on('finish', () => {
+            const { statusCode } = res;
+            console.log(`[${formattedDate}] ${method} ${originalUrl} - ${statusCode}`);
+        });
+    }
+    next();
+});
+
 // CORS
+const allowedOrigins = ['http://localhost:3000', 'http://192.168.100.4:3000'];
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
     optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
@@ -64,7 +88,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(helmet());
+//app.use(helmet());
 app.use(rateLimiter);
 app.use(speedLimiter);
 app.use(i18n.init);
