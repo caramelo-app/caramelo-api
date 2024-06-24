@@ -210,7 +210,7 @@ methods.signin = function (req, res) {
 
         // We must create a token
         const token = jwt.sign(fieldsToPayload, process.env.JWT_SECRET, {
-            expiresIn: 86400 // 24 hours
+            expiresIn: (req.body.remember) ? 86400 * 30 : 86400 // 24 hours or 30 days 
         });
 
         return res.status(200).json({ auth: true, token: token });
@@ -432,23 +432,25 @@ methods.forgotPassword = function (req, res) {
 };
 
 /**
- * Resets the user's password by checking the provided token against the stored validation token.
+ * Validates the user's account by checking the provided token against the stored validation token.
  * 
- * @param {Object} req - The HTTP request object containing the phone number, token, and new password.
+ * @param {Object} req - The HTTP request object containing the phone number and token.
  * @param {Object} res - The HTTP response object used to send the response.
  */
-methods.resetPassword = function (req, res) {
+methods.forgotPasswordValidation = function (req, res) {
+
+    // We need to check if the body contains the JWT Token
+    if (!req.body.token) {
+        return res.status(400).json({ message: res.__("controllers.auth.validate_account.errors.missing_token") });
+    }
 
     if (!req.body.phone) {
-        return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.missing_phone") });
+        return res.status(400).json({ message: res.__("general.errors.missing_phone") });
     }
+    else {
 
-    if (!req.body.token) {
-        return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.missing_token") });
-    }
-
-    if (!req.body.password) {
-        return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.missing_password") });
+        // We need to sanitize the phone number to get only the numbers
+        req.body.phone = sanitizeUtils.sanitizePhone(req.body.phone);
     }
 
     const options = checkIfAccountExists({ req: { body: { phone: req.body.phone } } });
@@ -460,40 +462,112 @@ methods.resetPassword = function (req, res) {
         }
 
         if (!user || user.length === 0) {
-            return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.user_not_found") });
+            return res.status(400).json({ message: res.__("controllers.auth.validate_account.errors.user_not_found") });
         }
 
         // Match the validation_token
         if (req.body.token !== user[0].validation_token) {
-            return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.invalid_token") });
+            return res.status(400).json({ message: res.__("controllers.auth.validate_account.errors.invalid_token") });
+        }
+
+        // Check if the user is available
+        if (user[0].status !== statusConsts.RESOURCE_STATUS.AVAILABLE) {
+            return res.status(400).json({ message: res.__("controllers.auth.validate_account.errors.user_not_available") });
         }
 
         // Check if the token has expired
         const expirationDate = new Date(user[0].validation_token_expires_at);
 
         if (expirationDate < Date.now()) {
-            return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.expired_token") });
+            return res.status(400).json({ message: res.__("controllers.auth.validate_account.errors.expired_token") });
         }
 
-        // We need to hash the password before saving it to the database
-        req.body.password = bcrypt.hashSync(req.body.password, 10);
+        const fieldsToPayload = {
+            phone: user[0].phone,
+            token: user[0].validation_token
+        };
 
-        CommonHandler.update({
-            filter: {
-                _id: user[0]._id
-            },
-            data: {
-                password: req.body.password,
-                validation_token: null,
-                validation_token_expires_at: null
+        const token = jwt.sign(fieldsToPayload, process.env.JWT_SECRET, {
+            expiresIn: 86400 // 24 hours
+        });
+
+        return res.status(200).json({
+            message: {
+                token: token
             }
-        }, UserModel, (err) => {
+        });
+    });
+};
+
+/**
+ * Resets the user's password by checking the provided token against the stored validation token.
+ * 
+ * @param {Object} req - The HTTP request object containing the phone number, token, and new password.
+ * @param {Object} res - The HTTP response object used to send the response.
+ */
+methods.resetPassword = function (req, res) {
+
+    if (!req.body.token) {
+        return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.missing_token") });
+    }
+
+    if (!req.body.password) {
+        return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.missing_password") });
+    }
+
+    // We need to uncrypt the token jwt
+    jwt.verify(req.body.token, process.env.JWT_SECRET, (err, decoded) => {
+
+        if (err) {
+            return res.status(401).json({
+                message: res.__("controllers.auth.authenticate.errors.invalid_token")
+            }).end();
+        }
+
+        const options = checkIfAccountExists({ req: { body: { phone: decoded.phone } } });
+
+        CommonHandler.aggregate(options, UserModel, (err, user) => {
 
             if (err) {
                 return res.status(400).json({ message: err.message });
             }
 
-            return res.status(200).json({ message: res.__("controllers.auth.forgot_password.success") });
+            if (!user || user.length === 0) {
+                return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.user_not_found") });
+            }
+
+            // Match the validation_token
+            if (decoded.token !== user[0].validation_token) {
+                return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.invalid_token") });
+            }
+
+            // Check if the token has expired
+            const expirationDate = new Date(user[0].validation_token_expires_at);
+
+            if (expirationDate < Date.now()) {
+                return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.expired_token") });
+            }
+
+            // We need to hash the password before saving it to the database
+            req.body.password = bcrypt.hashSync(req.body.password, 10);
+
+            CommonHandler.update({
+                filter: {
+                    _id: user[0]._id
+                },
+                data: {
+                    password: req.body.password,
+                    validation_token: null,
+                    validation_token_expires_at: null
+                }
+            }, UserModel, (err) => {
+
+                if (err) {
+                    return res.status(400).json({ message: err.message });
+                }
+
+                return res.status(200).json({ message: res.__("controllers.auth.forgot_password.success") });
+            });
         });
     });
 }

@@ -36,6 +36,7 @@
 					"invalid_token": "O token de validação de conta é inválido.",
 					"user_not_found": "Usuário não encontrado.",
 					"user_not_pending": "Usuário não consta como pendente.",
+					"user_not_available": "Usuário não está disponível.",
 					"missing_phone": "Telefone não enviado.",
 					"missing_token": "Token não enviado."
 				},
