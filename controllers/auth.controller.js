@@ -376,6 +376,9 @@ methods.forgotPassword = function (req, res) {
     if (!req.body.phone) {
         return res.status(400).json({ message: res.__("controllers.auth.forgot_password.errors.missing_phone") });
     }
+    else {
+        req.body.phone = sanitizeUtils.sanitizePhone(req.body.phone);
+    }
 
     const options = checkIfAccountExists({ req: { body: { phone: req.body.phone } } });
 
