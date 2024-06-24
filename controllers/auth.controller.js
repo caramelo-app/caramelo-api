@@ -17,6 +17,9 @@ const SNSHandler = require("../handlers/sns.handler");
 const { getAuthData, checkIfAccountExists, checkIfPhoneExists } = require("../aggregations/user.agg");
 const { checkIfCompanyExists } = require("../aggregations/company.agg");
 
+// Utils
+const sanitizeUtils = require("../utils/sanitize.utils");
+
 var methods = {};
 
 /**
@@ -30,6 +33,9 @@ var methods = {};
  * @param {Object} res - The HTTP response object.
  */
 methods.signup = async function (req, res) {
+
+    // We need to sanitize the phone number to get only the numbers
+    req.body.user.phone = sanitizeUtils.sanitizePhone(req.body.user.phone);
 
     const options = checkIfPhoneExists({ req: { body: { phone: req.body.user.phone } } });
 
@@ -164,12 +170,7 @@ methods.signin = function (req, res) {
     }
 
     // We need to sanitize the phone number to get only the numbers
-    // And if there's no 55 in the beginning and theres only 9 numbers, we need to add 55 at the beginning
-    req.body.phone = req.body.phone.replace(/\D/g, "");
-
-    if (req.body.phone.length === 11 && !req.body.phone.startsWith("55")) {
-        req.body.phone = "55" + req.body.phone;
-    }
+    req.body.phone = sanitizeUtils.sanitizePhone(req.body.phone);
 
     // We must get the user from the database
     const options = getAuthData({ req: req });
@@ -294,6 +295,11 @@ methods.validateAccount = function (req, res) {
     if (!req.body.phone) {
         return res.status(400).json({ message: res.__("general.errors.missing_phone") });
     }
+    else {
+
+        // We need to sanitize the phone number to get only the numbers
+        req.body.phone = sanitizeUtils.sanitizePhone(req.body.phone);
+    }
 
     const options = checkIfAccountExists({ req: { body: { phone: req.body.phone } } });
 
@@ -338,7 +344,23 @@ methods.validateAccount = function (req, res) {
                 return res.status(400).json({ message: err.message });
             }
 
-            return res.status(200).json({ message: res.__("controllers.auth.validate_account.success") });
+            // We need to generate a token for the user
+            const fieldsToPayload = {
+                _id: user[0]._id,
+                role: user[0].role
+            }
+
+            // If the user has the company object, we need to pass it into the user object in the payload
+            if (user[0].company) {
+                fieldsToPayload.company_id = user[0].company._id;
+            }
+
+            // We must create a token
+            const token = jwt.sign(fieldsToPayload, process.env.JWT_SECRET, {
+                expiresIn: 86400 // 24 hours
+            });
+
+            return res.status(200).json({ auth: true, token: token });
         });
     });
 };

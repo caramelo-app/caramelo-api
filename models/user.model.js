@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
             return this.role === roleConstants.USER_ROLES.CLIENT;
         },
         type: String,
+        sparse: true,
         unique: true,
         validate: {
             validator: function (v) {
@@ -31,7 +32,7 @@ const userSchema = new mongoose.Schema({
             validator: function (v) {
                 return validatePhone(v);
             },
-            message: props => `Phone ${props.value} é inválido`
+            message: props => `Telefone ${props.value} é inválido`
         }
     },
     password: {
