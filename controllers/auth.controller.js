@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
 // Constants
 const statusConsts = require("../constants/status.constants");
@@ -14,6 +15,7 @@ const CommonHandler = require("../handlers/common.handler");
 const SNSHandler = require("../handlers/sns.handler");
 
 // Aggregations
+const { readUserFullData } = require("../aggregations/user.agg");
 const { getAuthData, checkIfAccountExists, checkIfPhoneExists } = require("../aggregations/user.agg");
 const { checkIfCompanyExists } = require("../aggregations/company.agg");
 
@@ -600,5 +602,52 @@ async function sendValidationToken(options, callback) {
     });
 
 };
+
+methods.getUserData = function (req, res) {
+
+    // we need to get the token from the headers
+    const authHeader = req.headers["authorization"];
+
+    if (!authHeader) {
+        return res.status(401).json({
+            message: res.__("controllers.auth.authenticate.errors.no_token_provided")
+        }).end();
+    }
+
+    // Remove bearer from the token
+    const token = authHeader.split(" ")[1];
+
+    // extract the JWT token
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+
+        if (err) {
+            return res.status(401).json({
+                message: res.__("controllers.auth.authenticate.errors.invalid_token")
+            }).end();
+        }
+
+        const options = readUserFullData({
+            filter: {
+                _id: new mongoose.Types.ObjectId(decoded._id)
+            }
+        });
+
+        CommonHandler.aggregate(options, UserModel, (err, user) => {
+
+            if (err) {
+                return res.status(400).json({ message: err.message });
+            }
+
+            if (!user || user.length === 0) {
+                return res.status(400).json({ message: res.__("controllers.auth.validate_account.errors.user_not_found") });
+            }
+
+            return res.status(200).json({
+                user: user[0]
+            });
+        });
+    });
+};
+
 
 module.exports = methods;

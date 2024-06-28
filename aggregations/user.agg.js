@@ -48,7 +48,9 @@ exports.readUserFullData = (options) => {
         },
         {
             $project: {
-                password: 0
+                password: 0,
+                validation_token: 0,
+                validation_token_expires_at: 0
             }
         }
     ];
