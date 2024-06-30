@@ -649,5 +649,4 @@ methods.getUserData = function (req, res) {
     });
 };
 
-
 module.exports = methods;
