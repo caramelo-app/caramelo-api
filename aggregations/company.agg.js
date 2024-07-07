@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 exports.checkIfCompanyExists = (options) => {
 
     return [
@@ -93,5 +95,143 @@ exports.listCompanyConsumers = (options) => {
             }
         }
     ];
+};
 
+exports.getDashboardDataClientsOnLastWeeks = (options) => {
+
+    return [
+        {
+            $match: {
+                role: "consumer",
+                created_at: {
+                    $gte: options.cutoffDate
+                },
+                status: "available"
+            }
+        },
+        {
+            $lookup: {
+                "from": "usercredits",
+                "let": {
+                    "userId": "$_id",
+                    "companyId": options.company
+                },
+                "pipeline": [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$user", "$$userId"] },
+                                    { $eq: ["$company", "$$companyId"] }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$count": "creditsCount"
+                    }
+                ],
+                "as": "credits"
+            }
+        },
+        {
+            $addFields: {
+                "credits": {
+                    "$cond": {
+                        "if": {
+                            "$gt": [
+                                {
+                                    "$size": "$credits"
+                                },
+                                0
+                            ]
+                        },
+                        "then": true,
+                        "else": false
+                    }
+                }
+            }
+        },
+        {
+            $match: {
+                credits: true
+            }
+        },
+        {
+            $project: {
+                created_at: 1
+            }
+        }
+    ];
+};
+
+exports.getDashboardDataLastClients = (options) => {
+
+    return [
+        {
+            $match: {
+                company: options.company,
+                excluded: false
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                let: {
+                    userId: "$user"
+                },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $eq: [
+                                    "$_id",
+                                    "$$userId"
+                                ]
+                            },
+                            role: "consumer"
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            name: 1,
+                            email: 1,
+                            created_at: 1
+                        }
+                    }
+                ],
+                as: "userInfo"
+            }
+        },
+        {
+            $unwind: "$userInfo"
+        },
+        {
+            $group: {
+
+                _id: "$userInfo._id",
+                name: {
+                    $first: "$userInfo.name"
+                },
+                created_at: {
+                    $first: "$userInfo.created_at"
+                }
+
+            },
+        },
+        {
+            $sort: { created_at: -1 }
+        },
+        {
+            $limit: 5
+        },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                created_at: 1
+            }
+        }
+    ];
 };

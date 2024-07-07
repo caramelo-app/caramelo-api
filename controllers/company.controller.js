@@ -6,14 +6,18 @@ const roleConstants = require("../constants/roles.constants");
 
 // Models
 const CompanyModel = require("../models/company.model");
+const UserModel = require("../models/user.model");
+const UserCreditModel = require("../models/user-credit.model");
 
 // Handlers
 const CommonHandler = require("../handlers/common.handler");
 const EmailHandler = require("../handlers/email.handler");
 
 // Aggregations
-const { readCompanyFullData, listCompanyFullData, listCompanyConsumers } = require("../aggregations/company.agg");
-const userCreditModel = require("../models/user-credit.model");
+const { readCompanyFullData, listCompanyFullData, listCompanyConsumers, getDashboardDataClientsOnLastWeeks, getDashboardDataLastClients } = require("../aggregations/company.agg");
+
+// Utils
+const dateUtils = require("../utils/date.utils");
 
 var methods = {};
 
@@ -74,7 +78,7 @@ methods.listConsumers = async function (req, res) {
 
     const options = listCompanyConsumers({ filter: filter });
 
-    CommonHandler.aggregate(options, userCreditModel, (err, items) => {
+    CommonHandler.aggregate(options, UserCreditModel, (err, items) => {
 
         if (err) {
             return res.status(400).json({ message: err.message });
@@ -383,6 +387,7 @@ methods.createTrialRequest = function (req, res) {
         });
     });
 };
+
 /**
  * Lists available companies based on the current coordinates given by the user.
  * 
@@ -436,6 +441,163 @@ methods.explore = async function (req, res) {
         }
 
         return res.status(200).json(items);
+    });
+};
+
+methods.dashboardStats = async function (req, res) {
+
+    // Generate arrays to be used to populate the users per week
+    const weeksArray = [];
+
+    for (let i = 0; i < 4; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - (i * 7));
+        date.setUTCHours(0, 0, 0, 0);
+        weeksArray.push({
+            date: new Date(date),
+            count: 0
+        });
+    }
+
+    weeksArray.sort((a, b) => a.date - b.date);
+
+    // clone weeksarray to be used
+    const cloneWeeksArray = (array) => {
+        return array.map(item => ({
+            date: new Date(item.date),
+            count: item.count
+        }));
+    };
+
+    const clientsPerWeekArray = cloneWeeksArray(weeksArray);
+    const creditsGivenPerWeekArray = cloneWeeksArray(weeksArray);
+    const creditsTakenPerWeekArray = cloneWeeksArray(weeksArray);
+
+    // Cut off date for the last 4 weeks
+    const cutoffDate = dateUtils.setCutoffDate(4);
+
+    // Get the clients created on the last 4 weeks that used company cards
+    const clientsPerWeekOptions = getDashboardDataClientsOnLastWeeks({
+        cutoffDate: cutoffDate,
+        company: new mongoose.Types.ObjectId(req.user.company_id)
+    });
+
+    await CommonHandler.aggregate(clientsPerWeekOptions, UserModel, async (err, clients) => {
+
+        if (err) {
+            return res.status(400).json({ message: err.message });
+        }
+
+        // now we need to get the clients and sort them by weeks using the clientsPerWeekArray
+        // if the date is between the week date and the week date + 7 days, we increment the count
+        clients.forEach(client => {
+
+            clientsPerWeekArray.forEach(week => {
+
+                let weekStartDate = new Date(week.date);
+                let weekEndDate = new Date(weekStartDate);
+                weekEndDate.setDate(weekStartDate.getDate() + 7);
+
+                if (client.created_at >= weekStartDate && client.created_at < weekEndDate) {
+                    week.count++;
+                }
+            });
+        });
+
+        // Get the credits given on the last 4 weeks
+        const creditsGivenOptions = {
+            filter: {
+                created_at: {
+                    $gte: cutoffDate
+                },
+                company: new mongoose.Types.ObjectId(req.user.company_id),
+                excluded: false,
+                status: {
+                    $ne: statusConsts.CREDITS_STATUS.PENDING
+                }
+            },
+            projection: {
+                created_at: 1
+            }
+        };
+
+        await CommonHandler.list(creditsGivenOptions, UserCreditModel, async (err, creditsGiven) => {
+
+            if (err) {
+                return res.status(400).json({ message: err.message });
+            }
+
+            creditsGiven.forEach(credit => {
+
+                creditsGivenPerWeekArray.forEach(week => {
+
+                    let weekStartDate = new Date(week.date);
+                    let weekEndDate = new Date(weekStartDate);
+                    weekEndDate.setDate(weekStartDate.getDate() + 7);
+
+                    if (credit.created_at >= weekStartDate && credit.created_at < weekEndDate) {
+                        week.count++;
+                    }
+                });
+            });
+
+            // Get the credits taken on the last 4 weeks
+            const creditsTakenOptions = {
+                filter: {
+                    created_at: {
+                        $gte: cutoffDate
+                    },
+                    company: new mongoose.Types.ObjectId(req.user.company_id),
+                    excluded: false,
+                    status: {
+                        $eq: statusConsts.CREDITS_STATUS.USED
+                    }
+                },
+                projection: {
+                    created_at: 1
+                }
+            };
+
+            await CommonHandler.list(creditsTakenOptions, UserCreditModel, async (err, creditsTaken) => {
+
+                if (err) {
+                    return res.status(400).json({ message: err.message });
+                }
+
+                creditsTaken.forEach(credit => {
+
+                    creditsTakenPerWeekArray.forEach(week => {
+
+                        let weekStartDate = new Date(week.date);
+                        let weekEndDate = new Date(weekStartDate);
+                        weekEndDate.setDate(weekStartDate.getDate() + 7);
+
+                        if (credit.created_at >= weekStartDate && credit.created_at < weekEndDate) {
+                            week.count++;
+                        }
+                    });
+                });
+
+                // Get the clients created on the last 4 weeks that used company cards
+                const lastClientsOptions = getDashboardDataLastClients({
+                    company: new mongoose.Types.ObjectId(req.user.company_id)
+                });
+
+                await CommonHandler.aggregate(lastClientsOptions, UserCreditModel, async (err, clients) => {
+
+                    if (err) {
+                        return res.status(400).json({ message: err.message });
+                    }
+
+                    return res.status(200).json({
+                        lastClients: clients,
+                        clientsLastWeeks: clientsPerWeekArray,
+                        creditsGivenLastWeeks: creditsGivenPerWeekArray,
+                        creditsTakenLastWeeks: creditsTakenPerWeekArray
+                    });
+                });
+            });
+        });
     });
 };
 

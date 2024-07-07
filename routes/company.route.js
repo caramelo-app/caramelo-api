@@ -20,6 +20,15 @@ router.route("/trial-request").post(
     CompanyController.createTrialRequest
 );
 
+router.route("/dashboard-stats").get(
+    AuthController.authenticate,
+    AuthController.authorize([
+        roleConstants.USER_ROLES.CLIENT
+    ]),
+    CompanyController.dashboardStats
+);
+
+
 router.route("/").get(
     AuthController.authenticate,
     AuthController.authorize([
