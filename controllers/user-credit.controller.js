@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
 
 // Consts
-const statusConsts = require("../constants/status.constants");
-const roleConstants = require("../constants/roles.constants");
+const roleConsts = require("../constants/roles.constants");
 
 // Models
 const UserCreditModel = require("../models/user-credit.model");
@@ -30,7 +29,7 @@ methods.list = async function (req, res) {
     switch (req.user.role) {
 
         // Clients can only list their own user credits by cards
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
                 filter.company = new mongoose.Types.ObjectId(req.user.company_id);
@@ -39,7 +38,7 @@ methods.list = async function (req, res) {
             break;
 
         // Consumers can only list their own credits
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             if (req.user._id) {
                 filter.user = new mongoose.Types.ObjectId(req.user._id);
@@ -84,7 +83,7 @@ methods.read = async function (req, res) {
     switch (req.user.role) {
 
         // Consumers can only read their own user credits
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             if (req.user._id) {
                 filter.user = new mongoose.Types.ObjectId(req.user._id);
@@ -93,7 +92,7 @@ methods.read = async function (req, res) {
             break;
 
         // Clients can only read their own user credits by cards
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
                 filter.company = new mongoose.Types.ObjectId(req.user.company_id);
@@ -132,7 +131,7 @@ methods.create = async function (req, res) {
     switch (req.user.role) {
 
         // Clients can create credits by their own cards
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
                 req.body.company = new mongoose.Types.ObjectId(req.user.company_id);
@@ -172,7 +171,7 @@ methods.update = async function (req, res) {
     switch (req.user.role) {
 
         // Clients can only update their own user credits by cards
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
                 filter.company = new mongoose.Types.ObjectId(req.user.company_id);
@@ -181,7 +180,7 @@ methods.update = async function (req, res) {
             break;
 
         // Consumers cant edit any credit
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             return res.status(401).json({
                 message: res.__("general.errors.forbidden")
@@ -231,7 +230,7 @@ methods.delete = async function (req, res) {
     switch (req.user.role) {
 
         // Clients can only delete their own user credits by cards
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
                 options.filter.company = new mongoose.Types.ObjectId(req.user.company_id);
@@ -240,7 +239,7 @@ methods.delete = async function (req, res) {
             break;
 
         // Consumers can't delete any credit
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             return res.status(401).json({
                 message: res.__("general.errors.forbidden")

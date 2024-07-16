@@ -91,7 +91,10 @@ exports.listCompanyConsumers = (options) => {
             $project: {
                 password: 0,
                 role: 0,
-                excluded: 0
+                excluded: 0,
+                validation_token: 0,
+                validation_token_expires_at: 0,
+                __v: 0
             }
         }
     ];

@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 // Consts
 const statusConsts = require("../constants/status.constants");
-const roleConstants = require("../constants/roles.constants");
+const roleConsts = require("../constants/roles.constants");
 
 // Models
 const UserModel = require("../models/user.model");
@@ -32,7 +32,7 @@ methods.list = async function (req, res) {
     switch (req.user.role) {
 
         // Clients can only list users for their own company
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
 
@@ -45,7 +45,7 @@ methods.list = async function (req, res) {
             break;
 
         // Consumers can't list
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             return res.status(401).json({
                 message: res.__("general.errors.forbidden")
@@ -91,7 +91,7 @@ methods.read = async function (req, res) {
     switch (req.user.role) {
 
         // Consumers can only read their own data
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             if (req.user._id !== req.params.id) {
                 return res.status(401).json({
@@ -102,7 +102,7 @@ methods.read = async function (req, res) {
             break;
 
         // Clients can only read users from their own company
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
 
@@ -146,7 +146,7 @@ methods.create = async function (req, res) {
     switch (req.user.role) {
 
         // Clients can only create users for their own company
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
 
@@ -158,12 +158,12 @@ methods.create = async function (req, res) {
             }
 
             // Clients can only create users with the role of "clients"
-            req.body.role = roleConstants.USER_ROLES.CLIENT;
+            req.body.role = roleConsts.USER_ROLES.CLIENT;
 
             break;
 
         // Consumers can't create new users
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             return res.status(401).json({
                 message: res.__("general.errors.forbidden")
@@ -211,7 +211,7 @@ methods.update = async function (req, res) {
     switch (req.user.role) {
 
         // They can only edit users from the same company
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
 
@@ -235,7 +235,7 @@ methods.update = async function (req, res) {
             break;
 
         // Consumers can only edit themselves
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             if (req.user._id !== req.params.id) {
                 return res.status(401).json({
@@ -297,7 +297,7 @@ methods.delete = async function (req, res) {
     switch (req.user.role) {
 
         // Clients can only delete users from the same company
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
 
@@ -316,7 +316,7 @@ methods.delete = async function (req, res) {
             break;
 
         // Consumers can only delete themselves
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             if (req.user._id !== req.params.id) {
 

@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
         unique: true,
         validate: {
             validator: function (v) {
-                return validateEmail(v);
+                return !v || validateEmail(v);
             },
             message: props => `Email ${props.value} é inválido`
         }
@@ -41,36 +41,21 @@ const userSchema = new mongoose.Schema({
     },
     address: {
         street: {
-            required: function () {
-                return this.role === roleConstants.USER_ROLES.CLIENT;
-            },
             type: String
         },
         number: {
-            required: function () {
-                return this.role === roleConstants.USER_ROLES.CLIENT;
-            },
             type: Number
         },
         complement: {
             type: String
         },
         neighborhood: {
-            required: function () {
-                return this.role === roleConstants.USER_ROLES.CLIENT;
-            },
             type: String
         },
         city: {
-            required: function () {
-                return this.role === roleConstants.USER_ROLES.CLIENT;
-            },
             type: String
         },
         state: {
-            required: function () {
-                return this.role === roleConstants.USER_ROLES.CLIENT;
-            },
             type: String
         },
     },

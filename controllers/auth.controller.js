@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 
 // Constants
 const statusConsts = require("../constants/status.constants");
-const roleConstants = require("../constants/roles.constants");
+const roleConsts = require("../constants/roles.constants");
 
 // Models
 const UserModel = require("../models/user.model");
@@ -81,7 +81,7 @@ methods.signup = async function (req, res) {
                 res: res
             };
 
-            if (req.body.user.role === roleConstants.USER_ROLES.CLIENT) {
+            if (req.body.user.role === roleConsts.USER_ROLES.CLIENT) {
 
                 const options = checkIfCompanyExists({ req: { body: { document: req.body.company.document } } });
 

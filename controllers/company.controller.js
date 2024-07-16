@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 // Consts
 const statusConsts = require("../constants/status.constants");
-const roleConstants = require("../constants/roles.constants");
+const roleConsts = require("../constants/roles.constants");
 
 // Models
 const CompanyModel = require("../models/company.model");
@@ -37,8 +37,8 @@ methods.list = async function (req, res) {
     switch (req.user.role) {
 
         // Consumers and clients can't list
-        case roleConstants.USER_ROLES.CLIENT:
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             return res.status(401).json({
                 message: res.__("general.errors.forbidden")
@@ -66,7 +66,7 @@ methods.listConsumers = async function (req, res) {
 
     // Clients can only read their own company
     switch (req.user.role) {
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
             return res.status(401).json({
                 message: res.__("general.errors.forbidden")
             });
@@ -118,7 +118,7 @@ methods.read = async function (req, res) {
     switch (req.user.role) {
 
         // Clients can only read their own company
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
 
@@ -164,8 +164,8 @@ methods.create = async function (req, res) {
     switch (req.user.role) {
 
         // Consumers and Clients can't create companies
-        case roleConstants.USER_ROLES.CONSUMER:
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CLIENT:
             return res.status(401).json({
                 message: res.__("general.errors.forbidden")
             });
@@ -201,7 +201,7 @@ methods.update = async function (req, res) {
     switch (req.user.role) {
 
         // They can only edit their own company
-        case roleConstants.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CLIENT:
 
             if (req.user.company_id) {
 
@@ -222,7 +222,7 @@ methods.update = async function (req, res) {
             break;
 
         // Consumers cant edit any company
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             return res.status(401).json({
                 message: res.__("general.errors.forbidden")
@@ -272,8 +272,8 @@ methods.delete = async function (req, res) {
     switch (req.user.role) {
 
         // Consumers and clients can't delete companies
-        case roleConstants.USER_ROLES.CLIENT:
-        case roleConstants.USER_ROLES.CONSUMER:
+        case roleConsts.USER_ROLES.CLIENT:
+        case roleConsts.USER_ROLES.CONSUMER:
 
             return res.status(401).json({
                 message: res.__("general.errors.forbidden")
