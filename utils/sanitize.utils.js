@@ -4,7 +4,7 @@ function sanitizePhone(phone) {
     // And if there's no 55 in the beginning and theres only 9 numbers, we need to add 55 at the beginning
     phone = phone.replace(/\D/g, "");
 
-    if (phone.length === 11 && !phone.startsWith("55")) {
+    if (phone.length === 11) {
         phone = "55" + phone;
     }
 
