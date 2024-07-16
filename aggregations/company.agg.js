@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
 
+// Consts
+const roleConsts = require("../constants/roles.constants");
+const statusConsts = require("../constants/status.constants");
+
 exports.checkIfCompanyExists = (options) => {
 
     return [
@@ -43,7 +47,8 @@ exports.listCompanyConsumers = (options) => {
     return [
         {
             $match: {
-                company: options.filter._id,
+                company: options.filter.company,
+                excluded: false
             }
         },
         {
@@ -63,15 +68,9 @@ exports.listCompanyConsumers = (options) => {
                         $match: {
                             $expr: {
                                 $and: [
-                                    {
-                                        $eq: ["$_id", "$$userId"]
-                                    },
-                                    {
-                                        $eq: ["$status", "available"]
-                                    },
-                                    {
-                                        $eq: ["$excluded", false]
-                                    }
+                                    { $eq: ["$_id", "$$userId"] },
+                                    { $eq: ["$status", statusConsts.RESOURCE_STATUS.AVAILABLE] },
+                                    { $eq: ["$excluded", false] }
                                 ]
                             }
                         }
@@ -105,21 +104,21 @@ exports.getDashboardDataClientsOnLastWeeks = (options) => {
     return [
         {
             $match: {
-                role: "consumer",
+                role: roleConsts.USER_ROLES.CONSUMER,
                 created_at: {
                     $gte: options.cutoffDate
                 },
-                status: "available"
+                status: statusConsts.RESOURCE_STATUS.AVAILABLE
             }
         },
         {
             $lookup: {
-                "from": "usercredits",
-                "let": {
+                from: "usercredits",
+                let: {
                     "userId": "$_id",
                     "companyId": options.company
                 },
-                "pipeline": [
+                pipeline: [
                     {
                         $match: {
                             $expr: {
@@ -131,26 +130,26 @@ exports.getDashboardDataClientsOnLastWeeks = (options) => {
                         }
                     },
                     {
-                        "$count": "creditsCount"
+                        $count: "creditsCount"
                     }
                 ],
-                "as": "credits"
+                as: "credits"
             }
         },
         {
             $addFields: {
                 "credits": {
-                    "$cond": {
-                        "if": {
-                            "$gt": [
+                    $cond: {
+                        if: {
+                            $gt: [
                                 {
                                     "$size": "$credits"
                                 },
                                 0
                             ]
                         },
-                        "then": true,
-                        "else": false
+                        then: true,
+                        else: false
                     }
                 }
             }
@@ -192,7 +191,7 @@ exports.getDashboardDataLastClients = (options) => {
                                     "$$userId"
                                 ]
                             },
-                            role: "consumer"
+                            role: roleConsts.USER_ROLES.CONSUMER
                         }
                     },
                     {

@@ -126,15 +126,18 @@ const createCompanyCards = async (num, companies) => {
 const createUserCredits = async (num, users, companyCards, companies) => {
 
     const userCredits = [];
+    const consumers = users.filter(user => user.role === roleConsts.USER_ROLES.CONSUMER);
 
     for (let i = 0; i < num; i++) {
 
         const status = faker.helpers.enumValue(statusConsts.CREDITS_STATUS);
+        const card = faker.helpers.arrayElement(companyCards);
+        const company = card.company;
 
         userCredits.push(new UserCreditModel({
-            user: faker.helpers.arrayElement(users)._id,
-            card: faker.helpers.arrayElement(companyCards)._id,
-            company: faker.helpers.arrayElement(companies)._id,
+            user: faker.helpers.arrayElement(consumers)._id,
+            card: card._id,
+            company: company,
             status: status,
             excluded: faker.datatype.boolean(),
             created_at: faker.date.past(),

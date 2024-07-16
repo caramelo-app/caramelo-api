@@ -73,7 +73,7 @@ methods.listConsumers = async function (req, res) {
     }
 
     let filter = {
-        _id: new mongoose.Types.ObjectId(req.user.company_id)
+        company: new mongoose.Types.ObjectId(req.user.company_id)
     };
 
     const options = listCompanyConsumers({ filter: filter });
