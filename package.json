@@ -34,6 +34,8 @@
     "nodemailer-express-handlebars": "^6.1.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "@js-brasil/fakerbr": "^0.0.2",
     "nodemon": "^2.0.21"
   }
 }
