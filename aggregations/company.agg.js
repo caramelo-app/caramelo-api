@@ -42,12 +42,14 @@ exports.readCompanyFullData = (options) => {
     ];
 };
 
-exports.listCompanyConsumers = (options) => {
+exports.listCompanyConsumers = ({ filter, page, limit, sortField, sortOrder }) => {
+    const sort = {};
+    sort[sortField] = sortOrder === 'asc' ? 1 : -1;
 
     return [
         {
             $match: {
-                company: options.filter.company,
+                company: filter.company,
                 excluded: false
             }
         },
@@ -72,7 +74,15 @@ exports.listCompanyConsumers = (options) => {
                                     { $eq: ["$status", statusConsts.RESOURCE_STATUS.AVAILABLE] },
                                     { $eq: ["$excluded", false] }
                                 ]
-                            }
+                            },
+                            ...(filter.$or && { $or: filter.$or })
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            phone: 1,
+                            created_at: 1
                         }
                     }
                 ],
@@ -87,14 +97,13 @@ exports.listCompanyConsumers = (options) => {
             }
         },
         {
-            $project: {
-                password: 0,
-                role: 0,
-                excluded: 0,
-                validation_token: 0,
-                validation_token_expires_at: 0,
-                __v: 0
-            }
+            $sort: sort
+        },
+        {
+            $skip: (page - 1) * limit
+        },
+        {
+            $limit: parseInt(limit, 10)
         }
     ];
 };

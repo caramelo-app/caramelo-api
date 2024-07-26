@@ -64,33 +64,35 @@ methods.list = async function (req, res) {
  */
 methods.listConsumers = async function (req, res) {
 
-    // Clients can only read their own company
-    switch (req.user.role) {
-        case roleConsts.USER_ROLES.CONSUMER:
-            return res.status(401).json({
-                message: res.__("general.errors.forbidden")
-            });
+    if (req.user.role === roleConsts.USER_ROLES.CONSUMER) {
+        return res.status(401).json({
+            message: res.__("general.errors.forbidden")
+        });
     }
 
+    const { page = 1, limit = 10, sortField = 'name', sortOrder = 'asc', search = '' } = req.query;
+
     let filter = {
-        company: new mongoose.Types.ObjectId(req.user.company_id)
+        company: new mongoose.Types.ObjectId(req.user.company_id),
+        excluded: false
     };
 
-    const options = listCompanyConsumers({ filter: filter });
+    if (search) {
+        filter.$or = [
+            { name: { $regex: search, $options: 'i' } },
+            { phone: { $regex: search, $options: 'i' } }
+        ];
+    }
+
+    const options = listCompanyConsumers({ filter, page, limit, sortField, sortOrder });
 
     CommonHandler.aggregate(options, UserCreditModel, (err, items) => {
 
         if (err) {
-            return res.status(400).json({ message: err.message });
+            return res.status(400).json({ message: err.message, data: [] });
         }
 
-        if (items.length === 0) {
-            return res.status(400).json({
-                message: res.__("general.errors.item_not_found")
-            });
-        }
-
-        return res.status(200).json(items);
+        return res.status(200).json({ data: items });
     });
 };
 
