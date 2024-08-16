@@ -35,6 +35,10 @@ methods.list = async function (req, res) {
                 filter.company = new mongoose.Types.ObjectId(req.user.company_id);
             }
 
+            if (req.query.user_id) {
+                filter.user = new mongoose.Types.ObjectId(req.query.user_id);
+            }
+
             break;
 
         // Consumers can only list their own credits
@@ -127,31 +131,46 @@ methods.read = async function (req, res) {
  * @param {Object} res - The HTTP response object for returning the newly created credit data or errors.
  */
 methods.create = async function (req, res) {
+    try {
+        // If count is not provided, default to 1
+        const count = req.body.count || 1;
 
-    switch (req.user.role) {
+        // Array to hold the created records
+        const createdItems = [];
 
-        // Clients can create credits by their own cards
-        case roleConsts.USER_ROLES.CLIENT:
-
-            if (req.user.company_id) {
-                req.body.company = new mongoose.Types.ObjectId(req.user.company_id);
+        for (let i = 0; i < count; i++) {
+            switch (req.user.role) {
+                // Clients can create credits by their own cards
+                case roleConsts.USER_ROLES.CLIENT:
+                    if (req.user.company_id) {
+                        req.body.company = new mongoose.Types.ObjectId(req.user.company_id);
+                    }
+                    break;
             }
 
-            break;
-    };
+            const options = {
+                data: req.body
+            };
 
-    const options = {
-        data: req.body
-    };
+            // Create the record and push it to createdItems array
+            const createdItem = await new Promise((resolve, reject) => {
+                CommonHandler.create(options, UserCreditModel, (err, item) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(item);
+                    }
+                });
+            });
 
-    await CommonHandler.create(options, UserCreditModel, (err, item) => {
-
-        if (err) {
-            return res.status(400).json({ message: err.message });
+            createdItems.push(createdItem);
         }
 
-        return res.status(200).json(item);
-    });
+        // Return all created items
+        return res.status(200).json(createdItems);
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
 };
 
 /**

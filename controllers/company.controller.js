@@ -14,7 +14,7 @@ const CommonHandler = require("../handlers/common.handler");
 const EmailHandler = require("../handlers/email.handler");
 
 // Aggregations
-const { readCompanyFullData, listCompanyFullData, listCompanyConsumers, getDashboardDataClientsOnLastWeeks, getDashboardDataLastClients } = require("../aggregations/company.agg");
+const { readCompanyFullData, listCompanyFullData, listCompanyConsumers, getDashboardDataClientsOnLastWeeks, getDashboardDataLastClients, readCompanyConsumer } = require("../aggregations/company.agg");
 
 // Utils
 const dateUtils = require("../utils/date.utils");
@@ -95,6 +95,32 @@ methods.listConsumers = async function (req, res) {
         return res.status(200).json({ data: items });
     });
 };
+
+methods.readConsumer = async function (req, res) {
+
+    let filter = {
+        user: new mongoose.Types.ObjectId(req.params.consumer_id),
+        company: new mongoose.Types.ObjectId(req.user.company_id),
+    };
+
+    const options = readCompanyConsumer({ filter });
+
+    await CommonHandler.aggregate(options, UserCreditModel, (err, item) => {
+
+        if (err) {
+            return res.status(400).json({ message: err.message });
+        }
+
+        if (!item) {
+            return res.status(400).json({
+                message: res.__("general.errors.item_not_found")
+            });
+        }
+
+        return res.status(200).json(item);
+    });
+}
+
 
 /**
  * Retrieves detailed information for a single company based on its ID. Security measures ensure that

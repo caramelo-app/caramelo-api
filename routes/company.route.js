@@ -46,6 +46,14 @@ router.route("/consumers").get(
     CompanyController.listConsumers
 );
 
+router.route("/consumer/:consumer_id").get(
+    AuthController.authenticate,
+    AuthController.authorize([
+        roleConstants.USER_ROLES.CLIENT
+    ]),
+    CompanyController.readConsumer
+);
+
 router.route("/explore").get(
     AuthController.authenticate,
     AuthController.authorize([

@@ -43,6 +43,7 @@ exports.readCompanyFullData = (options) => {
 };
 
 exports.listCompanyConsumers = ({ filter, page, limit, sortField, sortOrder }) => {
+
     const sort = {};
     sort[sortField] = sortOrder === 'asc' ? 1 : -1;
 
@@ -54,8 +55,16 @@ exports.listCompanyConsumers = ({ filter, page, limit, sortField, sortOrder }) =
             }
         },
         {
+            $group: {
+                "_id": "$user",
+                "credits": {
+                    $push: "$_id"
+                }
+            }
+        },
+        {
             $project: {
-                user: 1
+                user: "$_id"
             }
         },
         {
@@ -104,6 +113,62 @@ exports.listCompanyConsumers = ({ filter, page, limit, sortField, sortOrder }) =
         },
         {
             $limit: parseInt(limit, 10)
+        }
+    ];
+};
+
+exports.readCompanyConsumer = ({ filter }) => {
+
+    return [
+        {
+            $match: {
+                company: filter.company,
+                excluded: false,
+                user: filter.user
+            }
+        },
+        {
+            $project: {
+                user: 1
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                as: "user",
+                let: {
+                    userId: "$user"
+                },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$_id", "$$userId"] },
+                                    { $eq: ["$status", statusConsts.RESOURCE_STATUS.AVAILABLE] },
+                                    { $eq: ["$excluded", false] }
+                                ]
+                            },
+                            ...(filter.$or && { $or: filter.$or })
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            phone: 1,
+                            created_at: 1
+                        }
+                    }
+                ],
+            }
+        },
+        {
+            $unwind: "$user"
+        },
+        {
+            $replaceRoot: {
+                newRoot: "$user"
+            }
         }
     ];
 };
