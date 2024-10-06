@@ -123,7 +123,7 @@ const createCompanyCards = async (num, companies) => {
     return CompanyCardModel.insertMany(companyCards);
 };
 
-const createUserCredits = async (num, users, companyCards, companies) => {
+const createUserCredits = async (num, users, companyCards) => {
 
     const userCredits = [];
     const consumers = users.filter(user => user.role === roleConsts.USER_ROLES.CONSUMER);
@@ -134,15 +134,33 @@ const createUserCredits = async (num, users, companyCards, companies) => {
         const card = faker.helpers.arrayElement(companyCards);
         const company = card.company;
 
+        const createdAt = faker.date.past();
+        let expiresAt = new Date(createdAt);
+
+        switch (card.credit_expires_at.ref_type) {
+            case dateConsts.TYPES.YEAR:
+                expiresAt.setFullYear(expiresAt.getFullYear() + card.credit_expires_at.ref_number);
+                break;
+            case dateConsts.TYPES.MONTH:
+                expiresAt.setMonth(expiresAt.getMonth() + card.credit_expires_at.ref_number);
+                break;
+            case dateConsts.TYPES.DAY:
+                expiresAt.setDate(expiresAt.getDate() + card.credit_expires_at.ref_number);
+                break;
+            default:
+                throw new Error("Tipo de expiração inválido");
+        }
+
         userCredits.push(new UserCreditModel({
             user: faker.helpers.arrayElement(consumers)._id,
             card: card._id,
             company: company,
             status: status,
             excluded: faker.datatype.boolean(),
-            created_at: faker.date.past(),
+            created_at: createdAt,
             updated_at: faker.date.recent(),
-            requested_at: status === statusConsts.CREDITS_STATUS.USED ? faker.date.past() : null
+            requested_at: status === statusConsts.CREDITS_STATUS.USED ? faker.date.past() : null,
+            expires_at: expiresAt
         }));
     }
 

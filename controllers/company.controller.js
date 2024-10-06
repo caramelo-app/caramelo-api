@@ -121,7 +121,6 @@ methods.readConsumer = async function (req, res) {
     });
 }
 
-
 /**
  * Retrieves detailed information for a single company based on its ID. Security measures ensure that
  * consumers cannot access company data, and clients can only access their own company's data.

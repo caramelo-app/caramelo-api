@@ -36,6 +36,15 @@ router.route("/:id").get(
     UserCreditsController.read
 );
 
+router.route("/release").patch(
+    AuthController.authenticate,
+    AuthController.authorize([
+        roleConstants.USER_ROLES.ADMIN,
+        roleConstants.USER_ROLES.CLIENT
+    ]),
+    UserCreditsController.release
+);
+
 router.route("/:id").patch(
     AuthController.authenticate,
     AuthController.authorize([

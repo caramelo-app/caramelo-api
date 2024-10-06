@@ -104,7 +104,7 @@ methods.update = async function (options, model, callback) {
 
     options.data.updated_at = new Date();
 
-    await model.findOneAndUpdate(options.filter, options.data, {
+    await model.updateMany(options.filter, options.data, {
         new: true,
         projection: projection,
         upsert: upsert,

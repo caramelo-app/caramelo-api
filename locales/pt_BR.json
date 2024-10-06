@@ -60,6 +60,11 @@
 					"invalid_coordinates": "Coordenadas inválidas."
 				}
 			}
+		},
+		"user_credits": {
+			"release": {
+				"not_enough_credits": "Créditos insuficientes."
+			}
 		}
 	},
 	"general": {
@@ -71,7 +76,8 @@
 			"forbidden": "Não autorizado.",
 			"bsonerror": "{{{field}}} está num formato inválido.",
 			"field_required": "{{{field}}} é obrigatório.",
-			"already_in_use": "{{{field}}} já está em uso."
+			"already_in_use": "{{{field}}} já está em uso.",
+			"missing_parameters": "Parâmetros faltando: {{{field}}}."
 		}
 	},
 	"email": {

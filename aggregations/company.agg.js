@@ -265,7 +265,9 @@ exports.getDashboardDataLastClients = (options) => {
                                     "$$userId"
                                 ]
                             },
-                            role: roleConsts.USER_ROLES.CONSUMER
+                            role: roleConsts.USER_ROLES.CONSUMER,
+                            excluded: false,
+                            status: statusConsts.RESOURCE_STATUS.AVAILABLE
                         }
                     },
                     {

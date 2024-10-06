@@ -28,7 +28,6 @@ router.route("/dashboard-stats").get(
     CompanyController.dashboardStats
 );
 
-
 router.route("/").get(
     AuthController.authenticate,
     AuthController.authorize([

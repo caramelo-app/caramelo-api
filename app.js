@@ -44,7 +44,7 @@ database.on("error", (error) => {
 })
 
 database.once("connected", () => {
-    console.log("Database Connected");
+    console.log("Database Connected at " + mongoString);
 });
 
 // Load routes
@@ -88,7 +88,7 @@ app.use((req, res, next) => {
     next();
 });
 
-//app.use(helmet());
+app.use(helmet());
 app.use(rateLimiter);
 app.use(speedLimiter);
 app.use(i18n.init);

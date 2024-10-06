@@ -38,6 +38,10 @@ const userCreditsSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    expires_at: {
+        type: Date,
+        required: true
+    }
 })
 
 module.exports = mongoose.model("UserCredits", userCreditsSchema);
