@@ -79,6 +79,7 @@ async function login(req, res, next) {
       tokenType: "Bearer",
       accessToken: token,
       expiresIn: parseInt(process.env.LOGIN_EXPIRES_IN),
+      role: user.role,
     });
   } catch (error) {
     next(error);
