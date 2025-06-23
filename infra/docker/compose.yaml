@@ -1,0 +1,14 @@
+name: caramelo-mongo
+services:
+  database:
+    image: "mongo:8.0.5"
+    env_file:
+      - ../../.env
+    ports:
+      - "27017:27017"
+    container_name: mongo-dev
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:

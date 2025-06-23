@@ -1,41 +1,79 @@
 {
   "name": "caramelo-api",
   "version": "1.0.0",
-  "description": "API for Caramelo",
-  "main": "app.js",
+  "description": "API for Caramelo project",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
+    "start": "npm run services:up && npm run services:wait:database && npm run migrations:up && nodemon index.js",
+    "test": "NODE_ENV=test npm run services:up && npm run services:wait:database && npm run migrations:up && concurrently -n server,jest --kill-others -s command-jest \"node index.js\" \"jest --runInBand --verbose\"",
+    "posttest": "npm run services:stop",
+    "test:watch": "jest --watchAll --runInBand --verbose",
+    "lint:prettier:check": "prettier --check .",
+    "lint:prettier:fix": "prettier --write .",
+    "lint:eslint:check": "eslint .",
+    "services:up": "docker compose -f infra/docker/compose.yaml up -d",
+    "services:down": "docker compose -f infra/docker/compose.yaml down",
+    "services:stop": "docker compose -f infra/docker/compose.yaml stop",
+    "services:wait:database": "node infra/database/wait-for-mongo.js",
+    "migrations:up": "migrate up",
+    "migrations:down": "migrate down",
+    "migrations:create": "migrate create",
+    "prepare": "husky",
+    "commit": "cz"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/caramelo-app/caramelo-api.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/caramelo-app/caramelo-api/issues"
-  },
-  "homepage": "https://github.com/caramelo-app/caramelo-api#readme",
+  "keywords": [],
+  "author": "Esser Serviços em Tecnologia LTDA (CNPJ 57.962.671/0001-50)",
+  "license": "proprietary",
+  "private": true,
   "dependencies": {
-    "@aws-sdk/client-sns": "^3.554.0",
-    "bcrypt": "^5.1.0",
-    "body-parser": "^1.20.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "express-rate-limit": "^6.7.0",
-    "express-slow-down": "^1.6.0",
-    "helmet": "^7.1.0",
-    "i18n": "^0.15.1",
-    "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.0.2",
-    "nodemailer": "^6.9.3",
-    "nodemailer-express-handlebars": "^6.1.0"
+    "@aws-sdk/client-sns": "3.812.0",
+    "async-retry": "1.3.3",
+    "bcryptjs": "3.0.2",
+    "cors": "2.8.5",
+    "dayjs": "1.11.13",
+    "dotenv": "16.4.7",
+    "dotenv-expand": "12.0.1",
+    "express": "4.21.2",
+    "express-rate-limit": "7.2.0",
+    "express-slow-down": "2.0.1",
+    "express-validator": "7.2.1",
+    "helmet": "7.1.0",
+    "i18n": "0.15.1",
+    "jsonwebtoken": "^9.0.2",
+    "migrate": "2.1.0",
+    "mongoose": "8.14.1",
+    "morgan": "1.10.0",
+    "uuid": "11.1.0"
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.4.1",
-    "@js-brasil/fakerbr": "^0.0.2",
-    "nodemon": "^2.0.21"
+    "@babel/core": "7.27.1",
+    "@babel/plugin-transform-modules-commonjs": "7.27.1",
+    "@babel/preset-env": "7.27.1",
+    "@commitlint/cli": "19.6.1",
+    "@commitlint/config-conventional": "19.6.0",
+    "@eslint/js": "9.26.0",
+    "@faker-js/faker": "9.7.0",
+    "autoprefixer": "10.4.20",
+    "babel-jest": "29.7.0",
+    "babel-plugin-module-resolver": "5.0.2",
+    "commitizen": "4.3.1",
+    "concurrently": "9.1.1",
+    "cz-conventional-changelog": "3.3.0",
+    "eslint": "9.17.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-jest": "28.10.0",
+    "eslint-plugin-prettier": "5.1.3",
+    "husky": "9.1.7",
+    "jest": "29.7.0",
+    "nodemon": "3.1.0",
+    "prettier": "3.4.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
