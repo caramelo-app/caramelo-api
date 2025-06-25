@@ -29,7 +29,7 @@ async function login(req, res, next) {
         excluded: false,
         status: statusConsts.RESOURCE_STATUS.AVAILABLE,
       },
-      projection: { _id: 1, password: 1, role: 1, company_id: 1 },
+      projection: { _id: 1, password: 1, role: 1, company_id: 1, name: 1, phone: 1 },
     };
 
     const user = await userHandler.read(userOptions);
@@ -79,7 +79,11 @@ async function login(req, res, next) {
       tokenType: "Bearer",
       accessToken: token,
       expiresIn: parseInt(process.env.LOGIN_EXPIRES_IN),
-      role: user.role,
+      user: {
+        name: user.name,
+        role: user.role,
+        phone: user.phone,
+      },
     });
   } catch (error) {
     next(error);
