@@ -72,7 +72,7 @@ async function login(req, res, next) {
     }
 
     const token = jwt.sign(encode, process.env.JWT_SECRET, {
-      expiresIn: process.env.LOGIN_EXPIRES_IN,
+      expiresIn: parseInt(process.env.LOGIN_EXPIRES_IN),
     });
 
     return res.status(200).json({
