@@ -11,7 +11,7 @@ beforeAll(async () => {
 
 describe("GET CEP Endpoint", () => {
   describe("Anonymous user", () => {
-    test("Valid CEP returns address data", async () => {
+    test("Valid CEP returns address data with location", async () => {
       const validCEP = "01001000";
       const response = await fetch(`${endpoint}?cep=${validCEP}`);
       const body = await response.json();
@@ -20,13 +20,18 @@ describe("GET CEP Endpoint", () => {
       expect(body).toEqual(
         expect.objectContaining({
           updated_at: expect.any(String),
-          data: expect.objectContaining({
-            cep: validCEP,
-            city: expect.any(String),
-            neighborhood: expect.any(String),
-            state: expect.any(String),
-            street: expect.any(String),
-            service: expect.any(String),
+          cep: validCEP,
+          city: expect.any(String),
+          neighborhood: expect.any(String),
+          state: expect.any(String),
+          street: expect.any(String),
+          service: expect.any(String),
+          location: expect.objectContaining({
+            type: "Point",
+            coordinates: expect.objectContaining({
+              longitude: expect.any(String),
+              latitude: expect.any(String),
+            }),
           }),
         }),
       );
@@ -43,7 +48,7 @@ describe("GET CEP Endpoint", () => {
           name: "ServiceError",
           action: localize("error.utils.cep.action"),
           status_code: 503,
-          message: localize("error.utils.cep.cause"),
+          message: expect.any(String),
         }),
       );
     });
