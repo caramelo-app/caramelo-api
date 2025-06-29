@@ -51,6 +51,8 @@ async function login(req, res, next) {
       role: user.role,
     };
 
+    let company = null;
+
     if (user.role === roleConstants.USER_ROLES.CLIENT) {
       encode.company_id = user.company_id;
 
@@ -60,11 +62,19 @@ async function login(req, res, next) {
           status: statusConsts.RESOURCE_STATUS.AVAILABLE,
           excluded: false,
         },
+        projection: {
+          name: 1,
+          phone: 1,
+          address: 1,
+          logo: 1,
+          segment: 1,
+          document: 1,
+        },
       };
 
-      const companyCheck = await companyHandler.read(companyHandlerOptions);
+      company = await companyHandler.read(companyHandlerOptions);
 
-      if (!companyCheck) {
+      if (!company) {
         throw new UnauthorizedError({
           message: localize("error.generic.notAvailable", { resource: localize("resources.company") }),
         });
@@ -75,7 +85,7 @@ async function login(req, res, next) {
       expiresIn: parseInt(process.env.LOGIN_EXPIRES_IN),
     });
 
-    return res.status(200).json({
+    const response = {
       tokenType: "Bearer",
       accessToken: token,
       expiresIn: parseInt(process.env.LOGIN_EXPIRES_IN),
@@ -84,7 +94,20 @@ async function login(req, res, next) {
         role: user.role,
         phone: user.phone,
       },
-    });
+    };
+
+    if (user.role === roleConstants.USER_ROLES.CLIENT && company) {
+      response.company = {
+        name: company.name,
+        phone: company.phone,
+        address: company.address,
+        logo: company.logo,
+        segment: company.segment,
+        document: company.document,
+      };
+    }
+
+    return res.status(200).json(response);
   } catch (error) {
     next(error);
   }
