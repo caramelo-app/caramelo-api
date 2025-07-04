@@ -19,6 +19,7 @@ function createDummyCompany(options) {
         type: "Point",
         coordinates: [faker.location.longitude(), faker.location.latitude()],
       },
+      zipcode: options?.zipcode || faker.location.zipCode().replace("-", ""),
     },
     logo: options?.logo || "https://via.placeholder.com/150",
     segment: options?.segment || {
