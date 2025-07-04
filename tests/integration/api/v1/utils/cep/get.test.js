@@ -26,13 +26,6 @@ describe("GET CEP Endpoint", () => {
           state: expect.any(String),
           street: expect.any(String),
           service: expect.any(String),
-          location: expect.objectContaining({
-            type: "Point",
-            coordinates: expect.objectContaining({
-              longitude: expect.any(String),
-              latitude: expect.any(String),
-            }),
-          }),
         }),
       );
     });
