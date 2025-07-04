@@ -159,8 +159,6 @@ describe("PATCH /api/v1/companies/credits/:credit_id", () => {
 
         const body = await response.json();
 
-        console.log(body);
-
         expect(typeof body).toBe("object");
         expect(response.status).toBe(200);
         expect(body.message).toBe(localize("companies.credits.update.success"));
@@ -559,8 +557,6 @@ describe("PATCH /api/v1/companies/credits/:credit_id", () => {
         });
 
         const body = await response.json();
-
-        console.log(body);
 
         expect(response.status).toBe(403);
         expect(body.name).toBe("ForbiddenError");
