@@ -9,6 +9,7 @@ const createDummyCard = require("tests/mock/card.mock");
 const createDummyCredit = require("tests/mock/credit.mock");
 const createDummySegment = require("tests/mock/segment.mock");
 const createDummyCompany = require("tests/mock/company.mock");
+const createDummyKnownLocation = require("tests/mock/knownlocation.mock");
 
 async function waitForAllServices() {
   await waitForWebServer();
@@ -78,6 +79,12 @@ async function createDocumentOnMongo(quantity = 1, handler, options = [{}]) {
     case "Credit": {
       for (let i = 0; i < quantity; i++) {
         documents.push(createDummyCredit(options[i]));
+      }
+      break;
+    }
+    case "KnownLocation": {
+      for (let i = 0; i < quantity; i++) {
+        documents.push(createDummyKnownLocation(options[i]));
       }
       break;
     }
