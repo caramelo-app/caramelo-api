@@ -121,7 +121,7 @@ async function getCoordinates(req, res, next) {
     }
 
     if (addressData.results.length === 0) {
-      console.log(addressData.status);
+      console.log(`addressData.status: ${addressData.status}`);
       throw new ServiceError({
         message: localize("error.utils.coordinates.cause"),
         action: localize("error.utils.coordinates.action"),
