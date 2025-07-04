@@ -84,6 +84,10 @@
         "service": "O serviço de CEP retornou uma resposta inválida ou o CEP fornecido é inválido",
         "cause": "Todos os serviços de CEP retornaram erro.",
         "action": "Tente novamente em 5 minutos ou tente outro CEP"
+      },
+      "coordinates": {
+        "cause": "O endereço fornecido não foi encontrado",
+        "action": "Verifique se o endereço está correto"
       }
     },
     "services": {
