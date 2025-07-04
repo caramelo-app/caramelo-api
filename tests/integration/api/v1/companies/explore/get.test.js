@@ -131,6 +131,7 @@ describe("GET /api/v1/companies/explore", () => {
                 type: "Point",
                 coordinates: [-49.24030887067606, -25.35738275006892],
               },
+              zipcode: faker.location.zipCode().replace("-", ""),
             },
           },
           {
@@ -152,6 +153,7 @@ describe("GET /api/v1/companies/explore", () => {
               neighborhood: faker.person.firstName(),
               city: faker.location.city(),
               state: faker.location.state(),
+              zipcode: faker.location.zipCode().replace("-", ""),
               location: {
                 type: "Point",
                 coordinates: [-49.24010361515069, -25.365798260045256],

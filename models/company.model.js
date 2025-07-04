@@ -15,6 +15,10 @@ const companySchema = new mongoose.Schema(
       type: String,
     },
     address: {
+      zipcode: {
+        required: true,
+        type: String,
+      },
       street: {
         required: true,
         type: String,
