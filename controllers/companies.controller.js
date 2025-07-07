@@ -922,6 +922,53 @@ async function validateCard(options) {
   return;
 }
 
+async function getCompanyUsers(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    let { limit, skip } = req.query;
+
+    if (!company_id) {
+      throw new ForbiddenError();
+    }
+
+    await validateCompany({
+      company_id,
+    });
+
+    if (!limit) {
+      limit = process.env.PAGINATION_DEFAULT_LIMIT;
+    }
+
+    if (!skip) {
+      skip = 0;
+    }
+
+    const userHandlerOptions = {
+      filter: {
+        company_id,
+        role: roleConstants.USER_ROLES.CLIENT,
+        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+        excluded: false,
+      },
+      limit,
+      skip,
+      sort: {
+        name: 1,
+      },
+      projection: {
+        name: 1,
+        status: 1,
+      },
+    };
+
+    const users = await userHandler.list(userHandlerOptions);
+
+    return res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getCompanyCards,
   exploreCompanies,
@@ -936,4 +983,5 @@ module.exports = {
   deleteCompanyCard,
   getCompanyCredits,
   updateCompanyCredit,
+  getCompanyUsers,
 };

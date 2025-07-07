@@ -48,5 +48,6 @@ router.patch("/cards/:card_id", companyValidations.updateCompanyCard(), companyC
 router.delete("/cards/:card_id", companyController.deleteCompanyCard);
 router.get("/credits", companyController.getCompanyCredits);
 router.patch("/credits/:credit_id", companyValidations.updateCompanyCredit(), companyController.updateCompanyCredit);
+router.get("/users", companyController.getCompanyUsers);
 
 module.exports = router;
