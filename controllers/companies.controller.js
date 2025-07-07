@@ -969,6 +969,48 @@ async function getCompanyUsers(req, res, next) {
   }
 }
 
+async function getCompanyUserById(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    const { user_id } = req.params;
+
+    if (!company_id) {
+      throw new ForbiddenError();
+    }
+
+    await validateCompany({
+      company_id,
+    });
+
+    const userReadOptions = {
+      filter: {
+        _id: user_id,
+        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+        role: roleConstants.USER_ROLES.CLIENT,
+        excluded: false,
+      },
+      projection: {
+        name: 1,
+        phone: 1,
+        created_at: 1,
+        status: 1,
+      },
+    };
+
+    const user = await userHandler.read(userReadOptions);
+
+    if (!user) {
+      throw new NotFoundError({
+        message: localize("error.generic.notFound", { resource: localize("resources.user") }),
+      });
+    }
+
+    return res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getCompanyCards,
   exploreCompanies,
@@ -984,4 +1026,5 @@ module.exports = {
   getCompanyCredits,
   updateCompanyCredit,
   getCompanyUsers,
+  getCompanyUserById,
 };
