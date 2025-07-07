@@ -127,6 +127,7 @@ describe("GET /api/v1/companies/users", () => {
 
         // order user by name
         user.documentsCreatedOnMongo.sort((a, b) => a.name.localeCompare(b.name));
+        user.documentsCreated.sort((a, b) => a.name.localeCompare(b.name));
 
         const loginResponse = await fetch(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/auth/login`, {
           method: "POST",
