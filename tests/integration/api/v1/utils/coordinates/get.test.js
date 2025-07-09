@@ -1,12 +1,7 @@
 const orchestrator = require("tests/orchestrator.js");
-const knownLocationModel = require("models/knownlocation.model");
-const dbHandler = require("utils/db-handler.utils");
 
 const { localize } = require("utils/localization.utils");
 const { connectDatabase, disconnectDatabase } = require("infra/database");
-
-// Handler
-const knownLocationHandler = dbHandler(knownLocationModel);
 
 const endpoint = `${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/utils/coordinates`;
 
@@ -23,10 +18,10 @@ afterAll(async () => {
 
 describe("GET /api/v1/utils/coordinates", () => {
   describe("Anonymous user", () => {
-
     test("Valid parameters return coordinates data without cache", async () => {
       await orchestrator.clearDatabase(); // Clear before this test
-      const queryString = "street=Rua da Consolação&neighborhood=Consolação&city=São Paulo&state=SP&zipcode=01302-907&number=1500";
+      const queryString =
+        "street=Rua da Consolação&neighborhood=Consolação&city=São Paulo&state=SP&zipcode=01302-907&number=1500";
 
       const response = await fetch(`${endpoint}?${queryString}`);
       const body = await response.json();
@@ -108,7 +103,8 @@ describe("GET /api/v1/utils/coordinates", () => {
     });
 
     test("Missing state parameter returns validation error", async () => {
-      const queryString = "street=Rua da Consolação&neighborhood=Consolação&city=São Paulo&zipcode=01302-907&number=1500";
+      const queryString =
+        "street=Rua da Consolação&neighborhood=Consolação&city=São Paulo&zipcode=01302-907&number=1500";
 
       const response = await fetch(`${endpoint}?${queryString}`);
       const body = await response.json();
@@ -190,7 +186,8 @@ describe("GET /api/v1/utils/coordinates", () => {
       await orchestrator.clearDatabase();
 
       // Use a test address that we know will work with Google Maps API
-      const queryString = "street=Rua Augusta&neighborhood=Consolação&city=São Paulo&state=SP&zipcode=01305-000&number=100";
+      const queryString =
+        "street=Rua Augusta&neighborhood=Consolação&city=São Paulo&state=SP&zipcode=01305-000&number=100";
 
       // First call - should create cache entry with cached: false
       const firstResponse = await fetch(`${endpoint}?${queryString}`);

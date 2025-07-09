@@ -104,12 +104,12 @@ async function getCoordinates(req, res, next) {
         address,
         latitude: knownLocation.address.location.coordinates[1],
         longitude: knownLocation.address.location.coordinates[0],
-        cached: true
+        cached: true,
       });
     }
 
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_MAPS_API_KEY}`
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.GOOGLE_MAPS_API_KEY}`,
     );
     const addressData = await response.json();
 
@@ -148,13 +148,10 @@ async function getCoordinates(req, res, next) {
           number: parseInt(number, 10),
           location: {
             type: "Point",
-            coordinates: [
-              coordinates.lng,
-              coordinates.lat
-            ],
+            coordinates: [coordinates.lng, coordinates.lat],
           },
         },
-      }
+      },
     };
 
     await knownLocationHandler.create(newKnownLocationOptions);

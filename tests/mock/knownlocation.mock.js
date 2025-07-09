@@ -12,10 +12,7 @@ function createDummyKnownLocation(options) {
       state: options?.state || faker.location.state(),
       location: {
         type: "Point",
-        coordinates: [
-          options?.longitude || faker.location.longitude(),
-          options?.latitude || faker.location.latitude(),
-        ],
+        coordinates: [options?.longitude || faker.location.longitude(), options?.latitude || faker.location.latitude()],
       },
     },
   };

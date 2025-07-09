@@ -92,7 +92,7 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
             status: statusConsts.RESOURCE_STATUS.AVAILABLE,
             company_id: company.documentsCreatedOnMongo[0]._id,
             role: roleConstants.USER_ROLES.CLIENT,
-          }
+          },
         ]);
 
         const loginResponse = await fetch(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/auth/login`, {
@@ -135,7 +135,7 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
             company_id: company.documentsCreatedOnMongo[0]._id,
             role: roleConstants.USER_ROLES.CLIENT,
             excluded: true,
-          }
+          },
         ]);
 
         const loginResponse = await fetch(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/auth/login`, {
@@ -179,7 +179,7 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
             status: statusConsts.RESOURCE_STATUS.UNAVAILABLE,
             company_id: company.documentsCreatedOnMongo[0]._id,
             role: roleConstants.USER_ROLES.CLIENT,
-          }
+          },
         ]);
 
         const loginResponse = await fetch(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/auth/login`, {
@@ -228,7 +228,7 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
             status: statusConsts.RESOURCE_STATUS.AVAILABLE,
             company_id: company.documentsCreatedOnMongo[0]._id,
             role: roleConstants.USER_ROLES.CLIENT,
-          }
+          },
         ]);
 
         const loginResponse = await fetch(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/auth/login`, {
@@ -273,7 +273,7 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
             status: statusConsts.RESOURCE_STATUS.AVAILABLE,
             company_id: company.documentsCreatedOnMongo[0]._id,
             role: roleConstants.USER_ROLES.CLIENT,
-          }
+          },
         ]);
 
         const loginResponse = await fetch(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/auth/login`, {
