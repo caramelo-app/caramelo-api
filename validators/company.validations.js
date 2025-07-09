@@ -124,6 +124,41 @@ function updateCompanyCredit() {
   ];
 }
 
+function getCompanyUserById() {
+  return [
+    param("user_id")
+      .notEmpty()
+      .withMessage(localize("error.generic.required", { field: "user_id" })),
+  ];
+}
+
+function updateCompanyUser() {
+  return [
+    param("user_id")
+      .notEmpty()
+      .withMessage(localize("error.generic.required", { field: "user_id" })),
+  ];
+}
+
+function deleteCompanyUser() {
+  return [
+    param("user_id")
+      .notEmpty()
+      .withMessage(localize("error.generic.required", { field: "user_id" })),
+  ];
+}
+
+function createCompanyUser() {
+  return [
+    body("name")
+      .notEmpty()
+      .withMessage(localize("error.generic.required", { field: "name" })),
+    body("phone")
+      .notEmpty()
+      .withMessage(localize("error.generic.required", { field: "phone" })),
+  ];
+}
+
 module.exports = {
   exploreCompanies,
   updateCompanyProfile,
@@ -133,4 +168,8 @@ module.exports = {
   createCompanyCard,
   updateCompanyCard,
   updateCompanyCredit,
+  getCompanyUserById,
+  updateCompanyUser,
+  deleteCompanyUser,
+  createCompanyUser,
 };

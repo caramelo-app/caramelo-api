@@ -736,6 +736,203 @@ async function updateCompanyCredit(req, res, next) {
   }
 }
 
+async function getCompanyUsers(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    let { limit, skip } = req.query;
+
+    if (!company_id) {
+      throw new ForbiddenError();
+    }
+
+    await validateCompany({
+      company_id,
+    });
+
+    if (!limit) {
+      limit = process.env.PAGINATION_DEFAULT_LIMIT;
+    }
+
+    if (!skip) {
+      skip = 0;
+    }
+
+    const userHandlerOptions = {
+      filter: {
+        company_id,
+        role: roleConstants.USER_ROLES.CLIENT,
+        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+        excluded: false,
+      },
+      limit,
+      skip,
+      sort: {
+        name: 1,
+      },
+      projection: {
+        name: 1,
+        status: 1,
+      },
+    };
+
+    const users = await userHandler.list(userHandlerOptions);
+
+    return res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getCompanyUserById(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    const { user_id } = req.params;
+
+    if (!company_id) {
+      throw new ForbiddenError();
+    }
+
+    await validateCompany({
+      company_id,
+    });
+
+    const userReadOptions = {
+      filter: {
+        _id: user_id,
+        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+        role: roleConstants.USER_ROLES.CLIENT,
+        excluded: false,
+      },
+      projection: {
+        name: 1,
+        phone: 1,
+        created_at: 1,
+        status: 1,
+      },
+    };
+
+    const user = await userHandler.read(userReadOptions);
+
+    if (!user) {
+      throw new NotFoundError({
+        message: localize("error.generic.notFound", { resource: localize("resources.user") }),
+      });
+    }
+
+    return res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updateCompanyUser(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    const { user_id } = req.params;
+    const { name, phone, password } = req.body;
+
+    if (!name && !phone && !password) {
+      throw new ValidationError();
+    }
+
+    await validateCompany({
+      company_id,
+    });
+
+    await validateUser({
+      user_id,
+      company_id,
+    });
+
+    const allowedFields = ["name", "phone", "password"];
+
+    const data = allowedFields.reduce((acc, field) => {
+      if (req.body[field] !== undefined) {
+        acc[field] = req.body[field];
+      }
+      return acc;
+    }, {});
+
+    const userUpdateOptions = {
+      filter: {
+        _id: user_id,
+      },
+      data,
+    };
+
+    await userHandler.update(userUpdateOptions);
+
+    return res.status(200).json({
+      message: localize("companies.users.update.success"),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function deleteCompanyUser(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    const { user_id } = req.params;
+
+    await validateCompany({
+      company_id,
+    });
+
+    await validateUser({
+      user_id,
+      company_id,
+    });
+
+    const userDeleteOptions = {
+      filter: {
+        _id: user_id,
+      },
+      data: {
+        status: statusConsts.RESOURCE_STATUS.UNAVAILABLE,
+      },
+    };
+
+    await userHandler.update(userDeleteOptions);
+
+    return res.status(200).json({
+      message: localize("companies.users.delete.success"),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function createCompanyUser(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    const { name, phone } = req.body;
+
+    await validateCompany({
+      company_id,
+    });
+
+    const userCreateOptions = {
+      data: {
+        name,
+        phone,
+        company_id,
+        role: roleConstants.USER_ROLES.CLIENT,
+        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+        excluded: false,
+      },
+    };
+
+    await userHandler.create(userCreateOptions);
+
+    return res.status(200).json({
+      message: localize("companies.users.create.success"),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function validateCredits(options) {
   if (!options.credits) {
     return;
@@ -922,93 +1119,26 @@ async function validateCard(options) {
   return;
 }
 
-async function getCompanyUsers(req, res, next) {
-  try {
-    const { company_id } = req.user;
-    let { limit, skip } = req.query;
+async function validateUser(options) {
+  const userHandlerOptions = {
+    filter: {
+      _id: options.user_id,
+      status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+      excluded: false,
+      role: roleConstants.USER_ROLES.CLIENT,
+      company_id: options.company_id,
+    },
+  };
 
-    if (!company_id) {
-      throw new ForbiddenError();
-    }
+  const user = await userHandler.read(userHandlerOptions);
 
-    await validateCompany({
-      company_id,
+  if (!user) {
+    throw new ForbiddenError({
+      message: localize("error.generic.notFound", { resource: localize("resources.user") }),
     });
-
-    if (!limit) {
-      limit = process.env.PAGINATION_DEFAULT_LIMIT;
-    }
-
-    if (!skip) {
-      skip = 0;
-    }
-
-    const userHandlerOptions = {
-      filter: {
-        company_id,
-        role: roleConstants.USER_ROLES.CLIENT,
-        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
-        excluded: false,
-      },
-      limit,
-      skip,
-      sort: {
-        name: 1,
-      },
-      projection: {
-        name: 1,
-        status: 1,
-      },
-    };
-
-    const users = await userHandler.list(userHandlerOptions);
-
-    return res.status(200).json(users);
-  } catch (error) {
-    next(error);
   }
-}
 
-async function getCompanyUserById(req, res, next) {
-  try {
-    const { company_id } = req.user;
-    const { user_id } = req.params;
-
-    if (!company_id) {
-      throw new ForbiddenError();
-    }
-
-    await validateCompany({
-      company_id,
-    });
-
-    const userReadOptions = {
-      filter: {
-        _id: user_id,
-        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
-        role: roleConstants.USER_ROLES.CLIENT,
-        excluded: false,
-      },
-      projection: {
-        name: 1,
-        phone: 1,
-        created_at: 1,
-        status: 1,
-      },
-    };
-
-    const user = await userHandler.read(userReadOptions);
-
-    if (!user) {
-      throw new NotFoundError({
-        message: localize("error.generic.notFound", { resource: localize("resources.user") }),
-      });
-    }
-
-    return res.status(200).json(user);
-  } catch (error) {
-    next(error);
-  }
+  return;
 }
 
 module.exports = {
@@ -1027,4 +1157,7 @@ module.exports = {
   updateCompanyCredit,
   getCompanyUsers,
   getCompanyUserById,
+  updateCompanyUser,
+  deleteCompanyUser,
+  createCompanyUser,
 };

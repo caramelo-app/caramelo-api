@@ -199,6 +199,17 @@
       "update": {
         "success": "Crédito atualizado com sucesso"
       }
+    },
+    "users": {
+      "update": {
+        "success": "Usuário atualizado com sucesso"
+      },
+      "delete": {
+        "success": "Usuário deletado com sucesso"
+      },
+      "create": {
+        "success": "Usuário criado com sucesso"
+      }
     }
   }
 }
