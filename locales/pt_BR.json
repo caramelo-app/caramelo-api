@@ -205,7 +205,10 @@
         "success": "Usuário atualizado com sucesso"
       },
       "delete": {
-        "success": "Usuário deletado com sucesso"
+        "success": "Usuário deletado com sucesso",
+        "error": {
+          "lastUser": "Este é o único usuário da empresa. Para desativar a conta, entre em contato com o suporte"
+        }
       },
       "create": {
         "success": "Usuário criado com sucesso"

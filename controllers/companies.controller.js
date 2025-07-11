@@ -761,12 +761,12 @@ async function getCompanyUsers(req, res, next) {
       filter: {
         company_id,
         role: roleConstants.USER_ROLES.CLIENT,
-        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
         excluded: false,
       },
       limit,
       skip,
       sort: {
+        status: 1,
         name: 1,
       },
       projection: {
@@ -884,6 +884,22 @@ async function deleteCompanyUser(req, res, next) {
       company_id,
     });
 
+    const userHandlerOptions = {
+      filter: {
+        company_id,
+        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+        excluded: false,
+      },
+    };
+    
+    const users = await userHandler.list(userHandlerOptions);
+
+    if (users.length === 1) {
+      throw new ValidationError({
+        message: localize("companies.users.delete.error.lastUser"),
+      });
+    }
+
     const userDeleteOptions = {
       filter: {
         _id: user_id,
@@ -908,6 +924,12 @@ async function createCompanyUser(req, res, next) {
     const { company_id } = req.user;
     const { name, phone } = req.body;
 
+    if (!phone) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "phone" }),
+      });
+    }
+
     await validateCompany({
       company_id,
     });
@@ -923,7 +945,13 @@ async function createCompanyUser(req, res, next) {
       },
     };
 
-    await userHandler.create(userCreateOptions);
+    const user = await userHandler.create(userCreateOptions);
+
+    if (user instanceof Error) {
+      throw new ValidationError({
+        message: user.message,
+      });
+    }
 
     return res.status(200).json({
       message: localize("companies.users.create.success"),

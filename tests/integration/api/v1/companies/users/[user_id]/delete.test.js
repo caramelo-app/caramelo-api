@@ -87,7 +87,13 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
           },
         ]);
 
-        const user = await orchestrator.createDocumentOnMongo(1, userHandler, [
+        // Need to have at least 2 users to test the last user case
+        const user = await orchestrator.createDocumentOnMongo(2, userHandler, [
+          {
+            status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+            company_id: company.documentsCreatedOnMongo[0]._id,
+            role: roleConstants.USER_ROLES.CLIENT,
+          },
           {
             status: statusConsts.RESOURCE_STATUS.AVAILABLE,
             company_id: company.documentsCreatedOnMongo[0]._id,
@@ -112,7 +118,6 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
         });
 
@@ -155,7 +160,6 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
         });
 
@@ -199,13 +203,7 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: "John Doe",
-            phone: "1234567890",
-            password: "1234567890",
-          }),
+          }
         });
 
         const body = await response.json();
@@ -248,7 +246,6 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
         });
 
@@ -293,7 +290,6 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
         });
 
@@ -303,6 +299,48 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
         expect(body.name).toBe("UnauthorizedError");
         expect(body.message).toBe(localize("error.generic.invalid", { field: "token" }));
         expect(body.action).toBe(localize("error.UnauthorizedError.action"));
+      });
+
+      test("Should return 400 when the user is the last user of the company", async () => {
+        const company = await orchestrator.createDocumentOnMongo(1, companyHandler, [
+          {
+            status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+          },
+        ]);
+
+        const user = await orchestrator.createDocumentOnMongo(1, userHandler, [
+          {
+            status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+            company_id: company.documentsCreatedOnMongo[0]._id,
+            role: roleConstants.USER_ROLES.CLIENT,
+          },
+        ]);
+
+        const loginResponse = await fetch(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ phone: user.documentsCreated[0].phone, password: user.documentsCreated[0].password }),
+        });
+
+        const loginBody = await loginResponse.json();
+        const token = loginBody.accessToken;
+
+        const endpointWithUserId = endpoint.replace(":user_id", user.documentsCreatedOnMongo[0]._id);
+
+        const response = await fetch(endpointWithUserId, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const body = await response.json();
+
+        expect(response.status).toBe(400);
+        expect(body.name).toBe("ValidationError");
+        expect(body.message).toBe(localize("companies.users.delete.error.lastUser"));
       });
     });
   });

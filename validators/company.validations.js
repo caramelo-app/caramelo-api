@@ -151,11 +151,14 @@ function deleteCompanyUser() {
 function createCompanyUser() {
   return [
     body("name")
-      .notEmpty()
-      .withMessage(localize("error.generic.required", { field: "name" })),
+      .optional()
+      .isString()
+      .withMessage(localize("error.generic.invalid", { field: "name" })),
     body("phone")
       .notEmpty()
-      .withMessage(localize("error.generic.required", { field: "phone" })),
+      .withMessage(localize("error.generic.required", { field: "phone" }))
+      .isString()
+      .withMessage(localize("error.generic.invalid", { field: "phone" })),
   ];
 }
 

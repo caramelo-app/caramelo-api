@@ -5,6 +5,7 @@ const creditModel = require("../models/credit.model");
 const dbHandler = require("../utils/db-handler.utils");
 const companyModel = require("../models/company.model");
 const statusConsts = require("../constants/status.constants");
+const roleConstants = require("../constants/roles.constants");
 
 const { ValidationError } = require("../infra/errors");
 const { localize } = require("../utils/localization.utils");
@@ -271,6 +272,20 @@ async function cancelAccount(req, res, next) {
       throw new ValidationError({
         message: localize("error.generic.notAvailable", { resource: localize("resources.user") }),
       });
+    }
+
+    if (req.user.role === roleConstants.USER_ROLES.CLIENT) {
+      if (!req.user.company_id) {
+        throw new ValidationError({
+          message: localize("error.generic.notFound", { resource: localize("resources.company") }),
+        });
+      }
+
+      if (user.company_id && user.company_id.toString() !== req.user.company_id.toString()) {
+        throw new ValidationError({
+          message: localize("error.generic.notAvailable", { resource: localize("resources.user") }),
+        });
+      }
     }
 
     await userHandler.update({

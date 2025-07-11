@@ -5,30 +5,13 @@ const statusConsts = require("../constants/status.constants");
 const roleConstants = require("../constants/roles.constants");
 
 const { localize } = require("../utils/localization.utils");
-const { validateEmail, validatePhone } = require("../utils/validation.utils");
+const { validatePhone } = require("../utils/validation.utils");
 
 const userSchema = new mongoose.Schema(
   {
     name: {
       required: true,
       type: String,
-    },
-    email: {
-      required: function () {
-        return this.role === roleConstants.USER_ROLES.CLIENT;
-      },
-      type: String,
-      sparse: true,
-      unique: true,
-      validate: {
-        validator: function (v) {
-          return !v || validateEmail(v);
-        },
-        message: (props) =>
-          localize("error.infra.model.user.email.invalid", {
-            email: props.value,
-          }),
-      },
     },
     phone: {
       required: function () {
