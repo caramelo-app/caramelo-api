@@ -33,6 +33,12 @@ async function fetchStatusPage() {
 }
 
 async function clearDatabase() {
+  require("models/knownlocation.model");
+  require("models/user.model");
+  require("models/company.model");
+  require("models/segment.model");
+  require("models/card.model");
+  require("models/credit.model");
   await database.clearDatabase();
 }
 
