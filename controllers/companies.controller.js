@@ -582,6 +582,53 @@ async function updateCompanyCard(req, res, next) {
   }
 }
 
+async function getCompanyCardById(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    const { card_id } = req.params;
+
+    await validateCompany({
+      company_id,
+    });
+
+    const card = await validateCard({
+      card_id,
+      company_id,
+      projection: {
+        _id: 1,
+        title: 1,
+        credits_needed: 1,
+        credit_expires_at: 1,
+        status: 1,
+        created_at: 1,
+      },
+    });
+
+    // Get credit statistics for this card
+    const creditList = await creditHandler.list({
+      filter: { card_id: card_id },
+      projection: {
+        card_id: 1,
+        user_id: 1,
+      },
+    });
+
+    const uniqueUsers = new Set(creditList.map((credit) => credit.user_id.toString()));
+
+    const cardWithStats = {
+      ...card,
+      stats: {
+        credits: creditList.length,
+        consumers: uniqueUsers.size,
+      },
+    };
+
+    return res.status(200).json(cardWithStats);
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function deleteCompanyCard(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -1171,6 +1218,7 @@ async function validateUser(options) {
 
 module.exports = {
   getCompanyCards,
+  getCompanyCardById,
   exploreCompanies,
   getCompanyProfile,
   updateCompanyProfile,

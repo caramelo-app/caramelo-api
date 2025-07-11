@@ -92,6 +92,14 @@ function createCompanyCard() {
   ];
 }
 
+function getCompanyCardById() {
+  return [
+    param("card_id")
+      .notEmpty()
+      .withMessage(localize("error.generic.required", { field: "card_id" })),
+  ];
+}
+
 function updateCompanyCard() {
   return [
     param("card_id")
@@ -169,6 +177,7 @@ module.exports = {
   createConsumer,
   updateConsumerCredits,
   createCompanyCard,
+  getCompanyCardById,
   updateCompanyCard,
   updateCompanyCredit,
   getCompanyUserById,

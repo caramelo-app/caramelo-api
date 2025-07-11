@@ -43,6 +43,7 @@ router.patch(
   companyController.updateConsumerCredits,
 );
 router.get("/cards", companyController.getCompanyCards);
+router.get("/cards/:card_id", companyValidations.getCompanyCardById(), companyController.getCompanyCardById);
 router.post("/cards", companyValidations.createCompanyCard(), companyController.createCompanyCard);
 router.patch("/cards/:card_id", companyValidations.updateCompanyCard(), companyController.updateCompanyCard);
 router.delete("/cards/:card_id", companyController.deleteCompanyCard);
