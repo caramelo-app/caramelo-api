@@ -16,12 +16,17 @@ afterAll(async () => {
   await disconnectDatabase();
 });
 
+beforeEach(async () => {
+  await orchestrator.clearDatabase();
+});
+
 describe("GET /api/v1/utils/coordinates", () => {
   describe("Anonymous user", () => {
     test("Valid parameters return coordinates data without cache", async () => {
-      await orchestrator.clearDatabase(); // Clear before this test
+      // Use a unique address for each test run to avoid cache issues
+      const timestamp = Date.now();
       const queryString =
-        "street=Rua da Consolação&neighborhood=Consolação&city=São Paulo&state=SP&zipcode=01302-907&number=1500";
+        `street=Rua da Consolação ${timestamp}&neighborhood=Consolação&city=São Paulo&state=SP&zipcode=01302-907&number=${timestamp % 1000 + 1000}`;
 
       const response = await fetch(`${endpoint}?${queryString}`);
       const body = await response.json();
@@ -37,8 +42,8 @@ describe("GET /api/v1/utils/coordinates", () => {
       );
 
       // Verify the address format
-      expect(body.address).toContain("Rua da Consolação");
-      expect(body.address).toContain("1500");
+      expect(body.address).toContain(`Rua da Consolação ${timestamp}`);
+      expect(body.address).toContain(`${timestamp % 1000 + 1000}`);
       expect(body.address).toContain("Consolação");
       expect(body.address).toContain("São Paulo");
       expect(body.address).toContain("SP");
@@ -182,12 +187,10 @@ describe("GET /api/v1/utils/coordinates", () => {
 
     // Cache test - run last to avoid interference with other tests
     test("Valid parameters return coordinates data with cache on second call", async () => {
-      // Clear database first to ensure clean state
-      await orchestrator.clearDatabase();
-
-      // Use a test address that we know will work with Google Maps API
+      // Use a unique test address for each test run
+      const timestamp = Date.now();
       const queryString =
-        "street=Rua Augusta&neighborhood=Consolação&city=São Paulo&state=SP&zipcode=01305-000&number=100";
+        `street=Rua Augusta ${timestamp}&neighborhood=Consolação&city=São Paulo&state=SP&zipcode=01305-000&number=${timestamp % 1000 + 100}`;
 
       // First call - should create cache entry with cached: false
       const firstResponse = await fetch(`${endpoint}?${queryString}`);

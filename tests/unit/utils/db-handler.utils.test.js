@@ -64,7 +64,6 @@ describe("DB Handler Utils", () => {
       });
       expect(response.length).toBe(5);
       expect(response[0].name).toBeDefined();
-      expect(response[0].email).toBeUndefined();
     });
 
     test("Should return a list of documents filtered by the filter parameter", async () => {
@@ -121,7 +120,6 @@ describe("DB Handler Utils", () => {
         projection: { name: 1 },
       });
       expect(response.name).toBe(createdDocument.documentsCreatedOnMongo[0].name);
-      expect(response.email).toBeUndefined();
     });
 
     test("Should return null if the document is not found", async () => {
@@ -141,7 +139,6 @@ describe("DB Handler Utils", () => {
       const response = await orchestrator.createDocumentOnMongo(1, userHandler);
 
       expect(response.documentsCreated[0].name).toBe(response.documentsCreatedOnMongo[0].name);
-      expect(response.documentsCreated[0].email).toBe(response.documentsCreatedOnMongo[0].email);
       expect(response.documentsCreated[0].role).toBe(response.documentsCreatedOnMongo[0].role);
       expect(response.documentsCreated[0].phone).toBe(response.documentsCreatedOnMongo[0].phone);
 
@@ -190,7 +187,6 @@ describe("DB Handler Utils", () => {
 
       expect(updatedDocument.role).toBe(roleConstants.USER_ROLES.ADMIN);
       expect(updatedDocument.name).toBe(createdDocument.documentsCreatedOnMongo[0].name);
-      expect(updatedDocument.email).toBe(createdDocument.documentsCreatedOnMongo[0].email);
       expect(updatedDocument.password).toBe(createdDocument.documentsCreatedOnMongo[0].password);
       expect(updatedDocument.phone).toBe(createdDocument.documentsCreatedOnMongo[0].phone);
       expect(updatedDocument.updated_at > updatedDocument.created_at).toBe(true);

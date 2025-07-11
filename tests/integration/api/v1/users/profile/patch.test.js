@@ -121,7 +121,6 @@ describe("PATCH /api/v1/users/profile", () => {
           },
           body: JSON.stringify({
             name: "John Doe",
-            email: "john.doe@example.com",
             phone,
             password: "testPassword123!",
           }),
@@ -136,7 +135,6 @@ describe("PATCH /api/v1/users/profile", () => {
         const userUpdated = await userHandler.read({ filter: { _id: user.documentsCreatedOnMongo[0]._id } });
 
         expect(userUpdated.name).toBe("John Doe");
-        expect(userUpdated.email).toBe("john.doe@example.com");
         expect(userUpdated.phone).toBe(phone);
 
         // Match hashed password

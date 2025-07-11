@@ -12,7 +12,6 @@ function createDummyUser(options) {
       }
       return options.name;
     })(),
-    email: faker.internet.email(),
     role: options?.role || roleConstants.USER_ROLES.CONSUMER,
     password: faker.internet.password(),
     phone: (() => {
