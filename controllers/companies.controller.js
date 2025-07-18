@@ -248,12 +248,18 @@ async function getConsumers(req, res, next) {
         status: statusConsts.RESOURCE_STATUS.AVAILABLE,
         excluded: false,
       },
+      projection: {
+        _id: 1,
+        name: 1,
+        phone: 1,
+      },
     };
 
     const users = await userHandler.list(userHandlerOptions);
 
     for (const user of users) {
       consumers.push({
+        _id: user._id,
         name: user.name,
         phone: user.phone,
       });
@@ -340,6 +346,7 @@ async function getConsumerById(req, res, next) {
       cards.push({
         _id: card._id,
         title: card.title,
+        credits_needed: card.credits_needed,
         credits: credits
           .filter((credit) => credit.card_id.toString() === card._id.toString())
           .map((credit) => ({
@@ -464,6 +471,62 @@ async function createConsumer(req, res, next) {
   }
 }
 
+async function updateConsumer(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    const { consumer_id } = req.params;
+    const { name, phone } = req.body;
+
+    if (!name && !phone) {
+      throw new ValidationError();
+    }
+
+    await validateCompany({
+      company_id,
+    });
+
+    const consumerReadOptions = {
+      filter: {
+        _id: consumer_id,
+        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+        excluded: false,
+      },
+    };
+
+    const consumer = await userHandler.read(consumerReadOptions);
+
+    if (!consumer) {
+      throw new NotFoundError({
+        message: localize("error.generic.notFound", { resource: localize("resources.consumer") }),
+      });
+    }
+
+    const allowedFields = ["name", "phone"];
+
+    const data = allowedFields.reduce((acc, field) => {
+      if (req.body[field] !== undefined) {
+        acc[field] = req.body[field];
+      }
+      return acc;
+    }, {});
+
+    const consumerUpdateOptions = {
+      filter: {
+        _id: consumer_id,
+      },
+      data,
+    };
+
+    await userHandler.update(consumerUpdateOptions);
+
+    return res.status(200).json({
+      message: localize("companies.consumers.update.success"),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function updateConsumerCredits(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -503,6 +566,60 @@ async function updateConsumerCredits(req, res, next) {
       throw new UnauthorizedError({
         message: localize("error.generic.notAvailable", { resource: localize("resources.user") }),
       });
+    }
+
+    // Create the credits
+    if (credits && credits.length > 0) {
+      const cardIds = credits.map((credit) => credit.card_id);
+
+      const cardHandlerOptions = {
+        filter: {
+          _id: { $in: cardIds },
+          company_id,
+          status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+          excluded: false,
+        },
+        projection: {
+          _id: 1,
+          credit_expires_at: 1,
+        },
+      };
+
+      const cards = await cardHandler.list(cardHandlerOptions);
+
+      const bulkCredits = [];
+
+      for (const credit of credits) {
+        const card = cards.find((c) => c._id.toString() === credit.card_id.toString());
+
+        if (!card) {
+          throw new ValidationError({
+            message: localize("error.generic.notFound", { resource: localize("resources.card") }),
+          });
+        }
+
+        for (let i = 0; i < credit.quantity; i++) {
+          const expires_at = dateUtils.addTime(
+            new Date(),
+            card.credit_expires_at.ref_number,
+            card.credit_expires_at.ref_type,
+          );
+
+          bulkCredits.push({
+            user_id: consumer_id,
+            card_id: credit.card_id,
+            status: statusConsts.CREDITS_STATUS.AVAILABLE,
+            company_id,
+            expires_at,
+          });
+        }
+      }
+
+      if (bulkCredits.length > 0) {
+        await creditHandler.createMany({
+          data: bulkCredits,
+        });
+      }
     }
 
     return res.status(200).json({
@@ -606,7 +723,13 @@ async function getCompanyCardById(req, res, next) {
 
     // Get credit statistics for this card
     const creditList = await creditHandler.list({
-      filter: { card_id: card_id },
+      filter: { 
+        card_id: card_id,
+        excluded: false,
+        status: {
+          $in: [statusConsts.CREDITS_STATUS.AVAILABLE, statusConsts.CREDITS_STATUS.USED],
+        }
+      },
       projection: {
         card_id: 1,
         user_id: 1,
@@ -966,6 +1089,87 @@ async function deleteCompanyUser(req, res, next) {
   }
 }
 
+async function deleteConsumerCredit(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    const { consumer_id, credit_id } = req.params;
+
+    await validateCompany({
+      company_id,
+    });
+
+    // Validate that the credit exists, belongs to the consumer and company, and is not excluded
+    const creditReadOptions = {
+      filter: {
+        _id: credit_id,
+        user_id: consumer_id,
+        company_id,
+        status: statusConsts.CREDITS_STATUS.AVAILABLE,
+        excluded: false,
+      },
+    };
+
+    const credit = await creditHandler.read(creditReadOptions);
+
+    if (!credit) {
+      throw new NotFoundError({
+        message: localize("error.generic.notFound", { resource: localize("resources.credit") }),
+      });
+    }
+
+    const creditDeleteOptions = {
+      filter: {
+        _id: credit_id,
+      },
+      data: {
+        excluded: true,
+      },
+    };
+
+    await creditHandler.update(creditDeleteOptions);
+
+    return res.status(200).json({
+      message: localize("companies.consumers.deleteCredit.success"),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function deleteConsumer(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    const { consumer_id } = req.params;
+
+    await validateCompany({
+      company_id,
+    });
+
+    await validateConsumer({
+      consumer_id,
+      company_id,
+    });
+
+    const consumerDeleteOptions = {
+      filter: {
+        _id: consumer_id,
+      },
+      data: {
+        status: statusConsts.RESOURCE_STATUS.UNAVAILABLE,
+        excluded: true,
+      },
+    };
+
+    await userHandler.update(consumerDeleteOptions);
+
+    return res.status(200).json({
+      message: localize("companies.consumers.delete.success"),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function createCompanyUser(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -1216,6 +1420,44 @@ async function validateUser(options) {
   return;
 }
 
+async function validateConsumer(options) {
+  const consumerReadOptions = {
+    filter: {
+      _id: options.consumer_id,
+      status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+      excluded: false,
+      role: roleConstants.USER_ROLES.CONSUMER,
+    },
+  };
+
+  const consumer = await userHandler.read(consumerReadOptions);
+
+  if (!consumer) {
+    throw new ForbiddenError({
+      message: localize("error.generic.notFound", { resource: localize("resources.consumer") }),
+    });
+  }
+
+  // Verificar se o consumer tem créditos da empresa
+  const creditHandlerOptions = {
+    filter: {
+      user_id: consumer._id,
+      company_id: options.company_id,
+      excluded: false,
+    },
+  };
+
+  const credits = await creditHandler.list(creditHandlerOptions);
+
+  if (!credits || credits.length === 0) {
+    throw new ForbiddenError({
+      message: localize("error.generic.notFound", { resource: localize("resources.consumer") }),
+    });
+  }
+
+  return consumer;
+}
+
 module.exports = {
   getCompanyCards,
   getCompanyCardById,
@@ -1225,7 +1467,10 @@ module.exports = {
   getConsumers,
   getConsumerById,
   createConsumer,
+  updateConsumer,
   updateConsumerCredits,
+  deleteConsumerCredit,
+  deleteConsumer,
   createCompanyCard,
   updateCompanyCard,
   deleteCompanyCard,

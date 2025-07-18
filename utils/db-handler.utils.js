@@ -8,7 +8,7 @@ module.exports = function (model) {
     const filter = options?.filter || {};
     const sort = options?.sort || {};
     const projection = options?.projection || {};
-    const limit = options?.limit || 10;
+    const limit = options?.limit || 1000;
     const skip = options?.skip || 0;
 
     try {

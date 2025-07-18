@@ -36,12 +36,15 @@ router.post(
   companyController.createConsumer,
 );
 router.get("/consumers/:consumer_id", companyValidations.getConsumerById(), companyController.getConsumerById);
+router.patch("/consumers/:consumer_id", companyValidations.updateConsumer(), companyController.updateConsumer);
+router.delete("/consumers/:consumer_id", companyValidations.deleteConsumer(), companyController.deleteConsumer);
 router.patch(
   "/consumers/:consumer_id/credits",
   creditOperationsRateLimit,
   companyValidations.updateConsumerCredits(),
   companyController.updateConsumerCredits,
 );
+router.delete("/consumers/:consumer_id/credits/:credit_id", companyValidations.deleteConsumerCredit(), companyController.deleteConsumerCredit);
 router.get("/cards", companyController.getCompanyCards);
 router.get("/cards/:card_id", companyValidations.getCompanyCardById(), companyController.getCompanyCardById);
 router.post("/cards", companyValidations.createCompanyCard(), companyController.createCompanyCard);

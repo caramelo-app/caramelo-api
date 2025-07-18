@@ -1,5 +1,6 @@
 const userModel = require("models/user.model");
 const cardModel = require("models/card.model");
+const creditModel = require("models/credit.model");
 const dbHandler = require("utils/db-handler.utils");
 const companyModel = require("models/company.model");
 const orchestrator = require("tests/orchestrator.js");
@@ -13,6 +14,7 @@ const { connectDatabase, disconnectDatabase } = require("infra/database");
 const userHandler = dbHandler(userModel);
 const companyHandler = dbHandler(companyModel);
 const cardHandler = dbHandler(cardModel);
+const creditHandler = dbHandler(creditModel);
 
 const endpoint = `${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/companies/consumers/:consumer_id/credits`;
 
@@ -141,6 +143,29 @@ describe("PATCH /api/v1/companies/consumers/:consumer_id/credits", () => {
 
         expect(response.status).toBe(200);
         expect(body.message).toBe(localize("companies.consumers.updateCredits.success"));
+
+        // Verify that credits were actually created
+        const createdCredits = await creditHandler.list({
+          filter: {
+            user_id: user.documentsCreatedOnMongo[1]._id,
+            company_id: company.documentsCreatedOnMongo[0]._id,
+            card_id: card.documentsCreatedOnMongo[0]._id,
+            status: statusConsts.CREDITS_STATUS.AVAILABLE,
+            excluded: false,
+          },
+        });
+
+        expect(createdCredits.length).toBe(4); // Should have created 4 credits as requested
+        
+        // Verify each credit has the correct properties
+        createdCredits.forEach((credit) => {
+          expect(credit.user_id.toString()).toBe(user.documentsCreatedOnMongo[1]._id.toString());
+          expect(credit.company_id.toString()).toBe(company.documentsCreatedOnMongo[0]._id.toString());
+          expect(credit.card_id.toString()).toBe(card.documentsCreatedOnMongo[0]._id.toString());
+          expect(credit.status).toBe(statusConsts.CREDITS_STATUS.AVAILABLE);
+          expect(credit.excluded).toBe(false);
+          expect(credit.expires_at).toBeDefined();
+        });
       });
 
       test("Should return 400 status when the user is not sending credits array", async () => {

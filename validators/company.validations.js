@@ -76,6 +76,22 @@ function updateConsumerCredits() {
   ];
 }
 
+function updateConsumer() {
+  return [
+    param("consumer_id")
+      .notEmpty()
+      .withMessage(localize("error.generic.required", { field: "consumer_id" })),
+    body("name")
+      .optional()
+      .isString()
+      .withMessage(localize("error.generic.invalid", { field: "name" })),
+    body("phone")
+      .optional()
+      .isString()
+      .withMessage(localize("error.generic.invalid", { field: "phone" })),
+  ];
+}
+
 function createCompanyCard() {
   return [
     body("title")
@@ -156,6 +172,25 @@ function deleteCompanyUser() {
   ];
 }
 
+function deleteConsumerCredit() {
+  return [
+    param("consumer_id")
+      .notEmpty()
+      .withMessage(localize("error.generic.required", { field: "consumer_id" })),
+    param("credit_id")
+      .notEmpty()
+      .withMessage(localize("error.generic.required", { field: "credit_id" })),
+  ];
+}
+
+function deleteConsumer() {
+  return [
+    param("consumer_id")
+      .notEmpty()
+      .withMessage(localize("error.generic.required", { field: "consumer_id" })),
+  ];
+}
+
 function createCompanyUser() {
   return [
     body("name")
@@ -176,6 +211,9 @@ module.exports = {
   getConsumerById,
   createConsumer,
   updateConsumerCredits,
+  updateConsumer,
+  deleteConsumerCredit,
+  deleteConsumer,
   createCompanyCard,
   getCompanyCardById,
   updateCompanyCard,
