@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const { fakerPT_BR: faker } = require("@faker-js/faker");
 
 function generatePhoneNumber() {
@@ -18,9 +19,14 @@ function generateCNPJ() {
   });
 }
 
+function ObjectId(objectId) {
+  return new mongoose.Types.ObjectId(objectId);
+}
+
 const dataUtils = {
   generatePhoneNumber,
   generateCNPJ,
+  ObjectId,
 };
 
 module.exports = dataUtils;

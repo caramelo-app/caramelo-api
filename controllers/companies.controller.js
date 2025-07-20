@@ -7,8 +7,10 @@ const companyModel = require("../models/company.model");
 const statusConsts = require("../constants/status.constants");
 const roleConstants = require("../constants/roles.constants");
 
+const { subTime, processWeeklyStats } = require("../utils/date.utils");
 const { localize } = require("../utils/localization.utils");
 const { NotFoundError, ForbiddenError, ValidationError, UnauthorizedError } = require("../infra/errors");
+const { getRecentClientsAggregation, getNewClientsAggregationLast4Weeks } = require("../aggregations/companies.aggregation");
 
 const userHandler = dbHandler(userModel);
 const cardHandler = dbHandler(cardModel);
@@ -1212,6 +1214,91 @@ async function createCompanyUser(req, res, next) {
   }
 }
 
+async function getCompanyStats(req, res, next) {
+  try {
+    const { company_id } = req.user;
+
+    await validateCompany({
+      company_id,
+    });
+
+    // Recent Clients - Latest 5 clients that have received credits
+    const recentClients = await creditHandler.aggregate({
+      pipeline: getRecentClientsAggregation({
+        company_id,
+      }),
+    });
+
+    // New Clients - Latest clients that have received credits in the last 4 weeks
+    const fourWeeksAgo = subTime(new Date(), 28, "days");
+    const newClientsRaw = await creditHandler.aggregate({
+      pipeline: getNewClientsAggregationLast4Weeks({
+        company_id,
+        baseDate: fourWeeksAgo,
+      }),
+    });
+
+    // Process newClients with weekly stats
+    const newClientsStats = processWeeklyStats(newClientsRaw, 'user_id', 'created_at');
+
+    // Credits Given - Credits given to clients in the last 4 weeks
+    const creditsGiven = await creditHandler.list({
+      filter: {
+        company_id,
+        status: statusConsts.CREDITS_STATUS.AVAILABLE,
+        created_at: { $gte: fourWeeksAgo }
+      },
+      projection: {
+        created_at: 1,
+      },
+    });
+
+    const creditsGivenStats = processWeeklyStats(creditsGiven);
+
+    // Credits Used - Credits used by clients in the last 4 weeks
+    const creditsUsed = await creditHandler.list({
+      filter: {
+        company_id,
+        status: statusConsts.CREDITS_STATUS.USED,
+        requested_at: { $gte: fourWeeksAgo }
+      },
+      projection: {
+        requested_at: 1,
+      },
+    });
+    
+    const creditsUsedStats = processWeeklyStats(creditsUsed, null, 'requested_at');
+
+    const response = {
+      recentClients: recentClients.map(client => ({
+        _id: client._id,
+        name: client.name,
+        phone: client.phone,
+        created_at: client.created_at,
+      })),
+      newClientsChart: {
+        dataKey: "week",
+        data: newClientsStats,
+        total: newClientsStats.reduce((sum, week) => sum + week.count, 0),
+      },
+      creditsGivenChart: {
+        dataKey: "week", 
+        data: creditsGivenStats,
+        total: creditsGivenStats.reduce((sum, week) => sum + week.count, 0),
+      },
+      creditsUsedChart: {
+        dataKey: "week",
+        data: creditsUsedStats,
+        total: creditsUsedStats.reduce((sum, week) => sum + week.count, 0),
+      },
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function validateCredits(options) {
   if (!options.credits) {
     return;
@@ -1481,4 +1568,5 @@ module.exports = {
   updateCompanyUser,
   deleteCompanyUser,
   createCompanyUser,
+  getCompanyStats,
 };

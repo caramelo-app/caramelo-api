@@ -26,6 +26,7 @@ router.use(requireClient);
 router.use(requireCompanyAccess);
 router.use(authenticatedUserRateLimit);
 
+router.get("/stats", companyController.getCompanyStats);
 router.get("/profile", companyController.getCompanyProfile);
 router.patch("/profile", companyValidations.updateCompanyProfile(), companyController.updateCompanyProfile);
 router.get("/consumers", companyController.getConsumers);
