@@ -45,7 +45,11 @@ router.patch(
   companyValidations.updateConsumerCredits(),
   companyController.updateConsumerCredits,
 );
-router.delete("/consumers/:consumer_id/credits/:credit_id", companyValidations.deleteConsumerCredit(), companyController.deleteConsumerCredit);
+router.delete(
+  "/consumers/:consumer_id/credits/:credit_id",
+  companyValidations.deleteConsumerCredit(),
+  companyController.deleteConsumerCredit,
+);
 router.get("/cards", companyController.getCompanyCards);
 router.get("/cards/:card_id", companyValidations.getCompanyCardById(), companyController.getCompanyCardById);
 router.post("/cards", companyValidations.createCompanyCard(), companyController.createCompanyCard);

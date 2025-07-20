@@ -10,7 +10,10 @@ const roleConstants = require("../constants/roles.constants");
 const { subTime, processWeeklyStats } = require("../utils/date.utils");
 const { localize } = require("../utils/localization.utils");
 const { NotFoundError, ForbiddenError, ValidationError, UnauthorizedError } = require("../infra/errors");
-const { getClientConsumersAggregation, getNewClientsAggregationLast4Weeks } = require("../aggregations/companies.aggregation");
+const {
+  getClientConsumersAggregation,
+  getNewClientsAggregationLast4Weeks,
+} = require("../aggregations/companies.aggregation");
 
 const userHandler = dbHandler(userModel);
 const cardHandler = dbHandler(cardModel);
@@ -677,12 +680,12 @@ async function getCompanyCardById(req, res, next) {
 
     // Get credit statistics for this card
     const creditList = await creditHandler.list({
-      filter: { 
+      filter: {
         card_id: card_id,
         excluded: false,
         status: {
           $in: [statusConsts.CREDITS_STATUS.AVAILABLE, statusConsts.CREDITS_STATUS.USED],
-        }
+        },
       },
       projection: {
         card_id: 1,
@@ -1015,7 +1018,7 @@ async function deleteCompanyUser(req, res, next) {
         excluded: false,
       },
     };
-    
+
     const users = await userHandler.list(userHandlerOptions);
 
     if (users.length === 1) {
@@ -1192,14 +1195,14 @@ async function getCompanyStats(req, res, next) {
     });
 
     // Process newClients with weekly stats
-    const newClientsStats = processWeeklyStats(newClientsRaw, 'user_id', 'created_at');
+    const newClientsStats = processWeeklyStats(newClientsRaw, "user_id", "created_at");
 
     // Credits Given - Credits given to clients in the last 4 weeks
     const creditsGiven = await creditHandler.list({
       filter: {
         company_id,
         status: statusConsts.CREDITS_STATUS.AVAILABLE,
-        created_at: { $gte: fourWeeksAgo }
+        created_at: { $gte: fourWeeksAgo },
       },
       projection: {
         created_at: 1,
@@ -1213,17 +1216,17 @@ async function getCompanyStats(req, res, next) {
       filter: {
         company_id,
         status: statusConsts.CREDITS_STATUS.USED,
-        requested_at: { $gte: fourWeeksAgo }
+        requested_at: { $gte: fourWeeksAgo },
       },
       projection: {
         requested_at: 1,
       },
     });
-    
-    const creditsUsedStats = processWeeklyStats(creditsUsed, null, 'requested_at');
+
+    const creditsUsedStats = processWeeklyStats(creditsUsed, null, "requested_at");
 
     const response = {
-      recentClients: recentClients.map(client => ({
+      recentClients: recentClients.map((client) => ({
         _id: client._id,
         name: client.name,
         phone: client.phone,
@@ -1235,7 +1238,7 @@ async function getCompanyStats(req, res, next) {
         total: newClientsStats.reduce((sum, week) => sum + week.count, 0),
       },
       creditsGivenChart: {
-        dataKey: "week", 
+        dataKey: "week",
         data: creditsGivenStats,
         total: creditsGivenStats.reduce((sum, week) => sum + week.count, 0),
       },

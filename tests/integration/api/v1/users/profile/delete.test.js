@@ -302,7 +302,10 @@ describe("DELETE /api/v1/users/profile", () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ phone: clientUser.documentsCreated[0].phone, password: clientUser.documentsCreated[0].password }),
+          body: JSON.stringify({
+            phone: clientUser.documentsCreated[0].phone,
+            password: clientUser.documentsCreated[0].password,
+          }),
         });
 
         const loginBody = await loginResponse.json();
@@ -337,7 +340,10 @@ describe("DELETE /api/v1/users/profile", () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ phone: consumerUser.documentsCreated[0].phone, password: consumerUser.documentsCreated[0].password }),
+          body: JSON.stringify({
+            phone: consumerUser.documentsCreated[0].phone,
+            password: consumerUser.documentsCreated[0].password,
+          }),
         });
 
         const loginBody = await loginResponse.json();

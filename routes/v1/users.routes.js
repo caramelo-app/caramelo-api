@@ -12,9 +12,11 @@ const requireConsumerOrClient = (req, res, next) => {
   if (req.user.role === roleConstants.USER_ROLES.CONSUMER || req.user.role === roleConstants.USER_ROLES.CLIENT) {
     return next();
   }
-  return next(new ForbiddenError({
-    message: localize("error.ForbiddenError.message"),
-  }));
+  return next(
+    new ForbiddenError({
+      message: localize("error.ForbiddenError.message"),
+    }),
+  );
 };
 
 const router = express.Router();
@@ -22,7 +24,12 @@ const router = express.Router();
 router.use(requireAuth);
 router.use(authenticatedUserRateLimit);
 router.get("/cards", requireConsumer, userController.getCards);
-router.get("/cards/companies/:company_id/list", requireConsumer, userValidations.getCompaniesCards(), userController.getCompaniesCards);
+router.get(
+  "/cards/companies/:company_id/list",
+  requireConsumer,
+  userValidations.getCompaniesCards(),
+  userController.getCompaniesCards,
+);
 router.post(
   "/cards/:card_id/request",
   requireConsumer,

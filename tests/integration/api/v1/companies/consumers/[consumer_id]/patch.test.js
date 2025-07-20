@@ -1,7 +1,5 @@
 const dataUtils = require("utils/data.utils");
 const userModel = require("models/user.model");
-const cardModel = require("models/card.model");
-const creditModel = require("models/credit.model");
 const dbHandler = require("utils/db-handler.utils");
 const companyModel = require("models/company.model");
 const orchestrator = require("tests/orchestrator.js");
@@ -15,8 +13,6 @@ const { connectDatabase, disconnectDatabase } = require("infra/database");
 // Handlers
 const userHandler = dbHandler(userModel);
 const companyHandler = dbHandler(companyModel);
-const cardHandler = dbHandler(cardModel);
-const creditHandler = dbHandler(creditModel);
 
 const endpoint = `${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/companies/consumers`;
 
@@ -433,4 +429,4 @@ describe("PATCH /api/v1/companies/consumers/:consumer_id", () => {
       });
     });
   });
-}); 
+});

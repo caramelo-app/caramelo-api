@@ -381,4 +381,4 @@ describe("DELETE /api/v1/companies/consumers/:consumer_id/credits/:credit_id", (
       });
     });
   });
-}); 
+});

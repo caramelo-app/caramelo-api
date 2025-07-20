@@ -7,51 +7,52 @@ function getClientConsumersAggregation(options) {
       $match: {
         company_id: ObjectId(options.company_id),
         excluded: false,
-      }
+      },
     },
     {
       $group: {
         _id: "$user_id",
-        lastCreditDate: { $max: "$created_at" }
-      }
+        lastCreditDate: { $max: "$created_at" },
+      },
     },
     {
-      $sort: { lastCreditDate: -1 }
+      $sort: { lastCreditDate: -1 },
     },
   ];
 
   if (options.limit) {
     aggregation.push({
-      $limit: options.limit
+      $limit: options.limit,
     });
   }
 
-  aggregation.push({
-    $lookup: {
-      from: "users",
-      localField: "_id",
-      foreignField: "_id",
-      pipeline: [
-        {
-          $match: {
-            status: statusConsts.RESOURCE_STATUS.AVAILABLE,
-            excluded: false
-          }
-        }
-      ],
-      as: "user"
-    }
-  },
+  aggregation.push(
     {
-      $unwind: "$user"
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        pipeline: [
+          {
+            $match: {
+              status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+              excluded: false,
+            },
+          },
+        ],
+        as: "user",
+      },
+    },
+    {
+      $unwind: "$user",
     },
     {
       $project: {
         name: "$user.name",
         phone: "$user.phone",
-        created_at: "$user.created_at"
-      }
-    }
+        created_at: "$user.created_at",
+      },
+    },
   );
 
   return aggregation;
@@ -63,20 +64,20 @@ function getNewClientsAggregationLast4Weeks(options) {
       $match: {
         company_id: ObjectId(options.company_id),
         excluded: false,
-        created_at: { $gte: options.baseDate }
-      }
+        created_at: { $gte: options.baseDate },
+      },
     },
     {
       $group: {
         _id: "$user_id",
-        created_at: { $last: "$created_at" }
-      }
+        created_at: { $last: "$created_at" },
+      },
     },
     {
       $project: {
-        created_at: 1
-      }
-    }
+        created_at: 1,
+      },
+    },
   ];
 
   return aggregation;
@@ -84,5 +85,5 @@ function getNewClientsAggregationLast4Weeks(options) {
 
 module.exports = {
   getClientConsumersAggregation,
-  getNewClientsAggregationLast4Weeks
-}
+  getNewClientsAggregationLast4Weeks,
+};

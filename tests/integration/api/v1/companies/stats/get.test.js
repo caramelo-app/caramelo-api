@@ -274,7 +274,7 @@ describe("GET /api/v1/companies/stats", () => {
         expect(body.newClientsChart.total).toBeGreaterThan(0);
 
         // Validate week data structure
-        body.newClientsChart.data.forEach(week => {
+        body.newClientsChart.data.forEach((week) => {
           expect(typeof week.week).toBe("string");
           expect(typeof week.count).toBe("number");
           expect(week.count).toBeGreaterThanOrEqual(0);
@@ -347,4 +347,4 @@ describe("GET /api/v1/companies/stats", () => {
       });
     });
   });
-}); 
+});

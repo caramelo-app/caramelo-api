@@ -203,7 +203,7 @@ describe("DELETE /api/v1/companies/users/:user_id", () => {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
-          }
+          },
         });
 
         const body = await response.json();

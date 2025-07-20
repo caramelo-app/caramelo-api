@@ -156,7 +156,7 @@ describe("PATCH /api/v1/companies/consumers/:consumer_id/credits", () => {
         });
 
         expect(createdCredits.length).toBe(4); // Should have created 4 credits as requested
-        
+
         // Verify each credit has the correct properties
         createdCredits.forEach((credit) => {
           expect(credit.user_id.toString()).toBe(user.documentsCreatedOnMongo[1]._id.toString());
