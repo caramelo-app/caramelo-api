@@ -10,7 +10,7 @@ const roleConstants = require("../constants/roles.constants");
 const { subTime, processWeeklyStats } = require("../utils/date.utils");
 const { localize } = require("../utils/localization.utils");
 const { NotFoundError, ForbiddenError, ValidationError, UnauthorizedError } = require("../infra/errors");
-const { getRecentClientsAggregation, getNewClientsAggregationLast4Weeks } = require("../aggregations/companies.aggregation");
+const { getClientConsumersAggregation, getNewClientsAggregationLast4Weeks } = require("../aggregations/companies.aggregation");
 
 const userHandler = dbHandler(userModel);
 const cardHandler = dbHandler(cardModel);
@@ -204,7 +204,6 @@ async function updateCompanyProfile(req, res, next) {
 async function getConsumers(req, res, next) {
   try {
     const { company_id } = req.user;
-    let { limit, skip } = req.query;
 
     if (!company_id) {
       throw new ForbiddenError();
@@ -214,58 +213,11 @@ async function getConsumers(req, res, next) {
       company_id,
     });
 
-    if (!limit) {
-      limit = process.env.PAGINATION_DEFAULT_LIMIT;
-    }
-
-    if (!skip) {
-      skip = 0;
-    }
-
-    let consumers = [];
-
-    const creditHandlerOptions = {
-      filter: {
+    const consumers = await creditHandler.aggregate({
+      pipeline: getClientConsumersAggregation({
         company_id,
-        status: statusConsts.CREDITS_STATUS.AVAILABLE,
-        excluded: false,
-      },
-      projection: {
-        user_id: 1,
-      },
-      limit,
-      skip,
-      sort: {
-        name: 1,
-      },
-    };
-
-    const credits = await creditHandler.list(creditHandlerOptions);
-
-    const userIds = credits.map((credit) => credit.user_id);
-
-    const userHandlerOptions = {
-      filter: {
-        _id: { $in: userIds },
-        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
-        excluded: false,
-      },
-      projection: {
-        _id: 1,
-        name: 1,
-        phone: 1,
-      },
-    };
-
-    const users = await userHandler.list(userHandlerOptions);
-
-    for (const user of users) {
-      consumers.push({
-        _id: user._id,
-        name: user.name,
-        phone: user.phone,
-      });
-    }
+      }),
+    });
 
     return res.status(200).json(consumers);
   } catch (error) {
@@ -1224,8 +1176,9 @@ async function getCompanyStats(req, res, next) {
 
     // Recent Clients - Latest 5 clients that have received credits
     const recentClients = await creditHandler.aggregate({
-      pipeline: getRecentClientsAggregation({
+      pipeline: getClientConsumersAggregation({
         company_id,
+        limit: 5,
       }),
     });
 
