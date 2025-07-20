@@ -15,6 +15,65 @@ const cardHandler = dbHandler(cardModel);
 const creditHandler = dbHandler(creditModel);
 const companyHandler = dbHandler(companyModel);
 
+/**
+ * @swagger
+ * /v1/users/cards:
+ *   get:
+ *     summary: Get user cards
+ *     description: Retrieve all cards available to the authenticated consumer
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User cards retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   company:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                       segment:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                       logo:
+ *                         type: string
+ *                       address:
+ *                         type: object
+ *                         properties:
+ *                           street:
+ *                             type: string
+ *                           number:
+ *                             type: number
+ *                           complement:
+ *                             type: string
+ *                           neighborhood:
+ *                             type: string
+ *                           city:
+ *                             type: string
+ *                           state:
+ *                             type: string
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a consumer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCards(req, res, next) {
   let response = [];
 
@@ -82,6 +141,55 @@ async function getCards(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/users/cards/companies/{company_id}/list:
+ *   get:
+ *     summary: Get company cards for user
+ *     description: Retrieve all cards from a specific company available to the authenticated consumer
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: company_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Company ID
+ *     responses:
+ *       200:
+ *         description: Company cards retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   title:
+ *                     type: string
+ *       400:
+ *         description: Invalid company ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a consumer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCompaniesCards(req, res, next) {
   try {
     let cards = [];
@@ -125,6 +233,60 @@ async function getCompaniesCards(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/users/cards/{card_id}/request:
+ *   post:
+ *     summary: Request credit for a card
+ *     description: Request a credit for a specific card from a company
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: card_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Card ID
+ *     responses:
+ *       200:
+ *         description: Credit requested successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Credit requested successfully"
+ *                 credit:
+ *                   $ref: '#/components/schemas/Credit'
+ *       400:
+ *         description: Invalid request or card not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a consumer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Card not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function requestCard(req, res, next) {
   try {
     const cardHandlerOptions = {
@@ -185,6 +347,38 @@ async function requestCard(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/users/profile:
+ *   get:
+ *     summary: Get user profile
+ *     description: Retrieve the authenticated user's profile information
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 phone:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getProfile(req, res, next) {
   try {
     const userHandlerOptions = {
@@ -208,6 +402,62 @@ async function getProfile(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/users/profile:
+ *   patch:
+ *     summary: Update user profile
+ *     description: Update the authenticated user's profile information
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: User name
+ *                 example: "João Silva"
+ *               email:
+ *                 type: string
+ *                 description: User email
+ *                 example: "joao@example.com"
+ *               phone:
+ *                 type: string
+ *                 description: User phone number
+ *                 example: "5511999999999"
+ *               password:
+ *                 type: string
+ *                 description: User password
+ *                 example: "newPassword123"
+ *     responses:
+ *       200:
+ *         description: User profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User profile updated successfully"
+ *       400:
+ *         description: Invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function updateProfile(req, res, next) {
   try {
     const { name, email, phone, password } = req.body;
@@ -256,6 +506,39 @@ async function updateProfile(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/users/profile:
+ *   delete:
+ *     summary: Cancel user account
+ *     description: Cancel the authenticated user's account
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Account cancelled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Account cancelled successfully"
+ *       400:
+ *         description: Invalid request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function cancelAccount(req, res, next) {
   try {
     const userHandlerOptions = {

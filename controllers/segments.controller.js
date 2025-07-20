@@ -4,6 +4,31 @@ const statusConsts = require("../constants/status.constants");
 
 const segmentHandler = dbHandler(segmentModel);
 
+/**
+ * @swagger
+ * /v1/segments:
+ *   get:
+ *     summary: Get segments
+ *     description: Retrieve all available business segments
+ *     tags: [Segments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Segments retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Segment'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getSegments(req, res, next) {
   try {
     const segmentListOptions = {

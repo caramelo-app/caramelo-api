@@ -20,6 +20,90 @@ const cardHandler = dbHandler(cardModel);
 const creditHandler = dbHandler(creditModel);
 const companyHandler = dbHandler(companyModel);
 
+/**
+ * @swagger
+ * /v1/companies/explore:
+ *   get:
+ *     summary: Explore companies
+ *     description: Find companies near a specific location
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: latitude
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Latitude coordinate
+ *         example: -23.5505
+ *       - in: query
+ *         name: longitude
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Longitude coordinate
+ *         example: -46.6333
+ *       - in: query
+ *         name: distance
+ *         schema:
+ *           type: number
+ *         description: Search radius in kilometers (max 10km)
+ *         example: 5
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *         description: Number of results to return
+ *         example: 20
+ *       - in: query
+ *         name: skip
+ *         schema:
+ *           type: number
+ *         description: Number of results to skip
+ *         example: 0
+ *     responses:
+ *       200:
+ *         description: Companies found successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   segment:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                   logo:
+ *                     type: string
+ *                   address:
+ *                     type: object
+ *       400:
+ *         description: Invalid coordinates
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a consumer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function exploreCompanies(req, res, next) {
   try {
     let { latitude, longitude, distance, limit, skip } = req.query;
@@ -72,6 +156,60 @@ async function exploreCompanies(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/cards:
+ *   get:
+ *     summary: Get company cards
+ *     description: Retrieve all cards created by the authenticated company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Company cards retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   title:
+ *                     type: string
+ *                   credits_needed:
+ *                     type: number
+ *                   credit_expires_at:
+ *                     type: object
+ *                     properties:
+ *                       ref_number:
+ *                         type: number
+ *                       ref_type:
+ *                         type: string
+ *                   status:
+ *                     type: string
+ *                   count:
+ *                     type: object
+ *                     properties:
+ *                       credits:
+ *                         type: number
+ *                       consumers:
+ *                         type: number
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCompanyCards(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -130,6 +268,35 @@ async function getCompanyCards(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/profile:
+ *   get:
+ *     summary: Get company profile
+ *     description: Retrieve the authenticated company's profile information
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Company profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Company'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCompanyProfile(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -163,6 +330,66 @@ async function getCompanyProfile(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/profile:
+ *   patch:
+ *     summary: Update company profile
+ *     description: Update the authenticated company's profile information
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Company name
+ *                 example: "Restaurante Exemplo"
+ *               phone:
+ *                 type: string
+ *                 description: Company phone number
+ *                 example: "5511999999999"
+ *               address:
+ *                 type: object
+ *                 description: Company address
+ *               logo:
+ *                 type: string
+ *                 description: Company logo URL
+ *     responses:
+ *       200:
+ *         description: Company profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Company profile updated successfully"
+ *       400:
+ *         description: Invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function updateCompanyProfile(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -204,6 +431,53 @@ async function updateCompanyProfile(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/consumers:
+ *   get:
+ *     summary: Get company consumers
+ *     description: Retrieve all consumers who have credits from the authenticated company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Company consumers retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   phone:
+ *                     type: string
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *                   total_credits:
+ *                     type: number
+ *                   used_credits:
+ *                     type: number
+ *                   available_credits:
+ *                     type: number
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getConsumers(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -228,6 +502,86 @@ async function getConsumers(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/consumers/{consumer_id}:
+ *   get:
+ *     summary: Get consumer by ID
+ *     description: Retrieve detailed information about a specific consumer
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: consumer_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Consumer ID
+ *     responses:
+ *       200:
+ *         description: Consumer details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 consumer:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                 cards:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       credits_needed:
+ *                         type: number
+ *                       credits:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             _id:
+ *                               type: string
+ *                             created_at:
+ *                               type: string
+ *                               format: date-time
+ *                             user_id:
+ *                               type: string
+ *                             status:
+ *                               type: string
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Consumer not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getConsumerById(req, res, next) {
   try {
     let response = {};
@@ -326,6 +680,75 @@ async function getConsumerById(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/consumers:
+ *   post:
+ *     summary: Create consumer
+ *     description: Create a new consumer and optionally assign credits
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Consumer name
+ *                 example: "João Silva"
+ *               phone:
+ *                 type: string
+ *                 description: Consumer phone number
+ *                 example: "5511999999999"
+ *               credits:
+ *                 type: array
+ *                 description: Credits to assign to the consumer
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     card_id:
+ *                       type: string
+ *                       description: Card ID
+ *                     quantity:
+ *                       type: number
+ *                       description: Number of credits
+ *                       example: 5
+ *     responses:
+ *       200:
+ *         description: Consumer created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Consumer created successfully"
+ *       400:
+ *         description: Invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function createConsumer(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -428,6 +851,73 @@ async function createConsumer(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/consumers/{consumer_id}:
+ *   patch:
+ *     summary: Update consumer
+ *     description: Update consumer information
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: consumer_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Consumer ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Consumer name
+ *                 example: "João Silva"
+ *               phone:
+ *                 type: string
+ *                 description: Consumer phone number
+ *                 example: "5511999999999"
+ *     responses:
+ *       200:
+ *         description: Consumer updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Consumer updated successfully"
+ *       400:
+ *         description: Invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Consumer not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function updateConsumer(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -484,6 +974,81 @@ async function updateConsumer(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/consumers/{consumer_id}/credits:
+ *   patch:
+ *     summary: Update consumer credits
+ *     description: Add credits to a specific consumer
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: consumer_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Consumer ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - credits
+ *             properties:
+ *               credits:
+ *                 type: array
+ *                 description: Credits to add to the consumer
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     card_id:
+ *                       type: string
+ *                       description: Card ID
+ *                       example: "507f1f77bcf86cd799439011"
+ *                     quantity:
+ *                       type: number
+ *                       description: Number of credits
+ *                       example: 5
+ *     responses:
+ *       200:
+ *         description: Consumer credits updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Consumer credits updated successfully"
+ *       400:
+ *         description: Invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Consumer not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function updateConsumerCredits(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -587,6 +1152,73 @@ async function updateConsumerCredits(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/cards:
+ *   post:
+ *     summary: Create company card
+ *     description: Create a new card for the authenticated company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - credits_needed
+ *               - credit_expires_at
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Card title
+ *                 example: "Desconto 20%"
+ *               credits_needed:
+ *                 type: number
+ *                 description: Number of credits needed to redeem
+ *                 example: 5
+ *               credit_expires_at:
+ *                 type: object
+ *                 description: Credit expiration configuration
+ *                 properties:
+ *                   ref_number:
+ *                     type: number
+ *                     description: Number of time units
+ *                     example: 30
+ *                   ref_type:
+ *                     type: string
+ *                     description: Time unit type
+ *                     enum: [days, weeks, months, years]
+ *                     example: "days"
+ *     responses:
+ *       200:
+ *         description: Card created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Card'
+ *       400:
+ *         description: Invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function createCompanyCard(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -618,6 +1250,82 @@ async function createCompanyCard(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/cards/{card_id}:
+ *   patch:
+ *     summary: Update company card
+ *     description: Update an existing card for the authenticated company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: card_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Card ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Card title
+ *                 example: "Desconto 25%"
+ *               credits_needed:
+ *                 type: number
+ *                 description: Number of credits needed to redeem
+ *                 example: 10
+ *               credit_expires_at:
+ *                 type: object
+ *                 description: Credit expiration configuration
+ *                 properties:
+ *                   ref_number:
+ *                     type: number
+ *                     description: Number of time units
+ *                     example: 60
+ *                   ref_type:
+ *                     type: string
+ *                     description: Time unit type
+ *                     enum: [days, weeks, months, years]
+ *                     example: "days"
+ *     responses:
+ *       200:
+ *         description: Card updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Card'
+ *       400:
+ *         description: Invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Card not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function updateCompanyCard(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -656,6 +1364,76 @@ async function updateCompanyCard(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/cards/{card_id}:
+ *   get:
+ *     summary: Get company card by ID
+ *     description: Retrieve detailed information about a specific card
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: card_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Card ID
+ *     responses:
+ *       200:
+ *         description: Card details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 title:
+ *                   type: string
+ *                 credits_needed:
+ *                   type: number
+ *                 credit_expires_at:
+ *                   type: object
+ *                   properties:
+ *                     ref_number:
+ *                       type: number
+ *                     ref_type:
+ *                       type: string
+ *                 status:
+ *                   type: string
+ *                 created_at:
+ *                   type: string
+ *                   format: date-time
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     credits:
+ *                       type: number
+ *                       description: Total number of credits for this card
+ *                     consumers:
+ *                       type: number
+ *                       description: Number of unique consumers with this card
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Card not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCompanyCardById(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -709,6 +1487,52 @@ async function getCompanyCardById(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/cards/{card_id}:
+ *   delete:
+ *     summary: Delete company card
+ *     description: Delete a card from the authenticated company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: card_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Card ID
+ *     responses:
+ *       200:
+ *         description: Card deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Card deleted successfully"
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Card not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function deleteCompanyCard(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -746,6 +1570,67 @@ async function deleteCompanyCard(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/credits:
+ *   get:
+ *     summary: Get pending credits
+ *     description: Retrieve all pending credits for the authenticated company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Pending credits retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   user:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       phone:
+ *                         type: string
+ *                   card:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       credits_needed:
+ *                         type: number
+ *                   status:
+ *                     type: string
+ *                     enum: [pending, available, used, rejected]
+ *                   requested_at:
+ *                     type: string
+ *                     format: date-time
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCompanyCredits(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -814,6 +1699,74 @@ async function getCompanyCredits(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/credits/{credit_id}:
+ *   patch:
+ *     summary: Update credit status
+ *     description: Approve or reject a pending credit request
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: credit_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Credit ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [available, rejected]
+ *                 description: New status for the credit
+ *                 example: "available"
+ *     responses:
+ *       200:
+ *         description: Credit status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Credit status updated successfully"
+ *                 credit:
+ *                   $ref: '#/components/schemas/Credit'
+ *       400:
+ *         description: Invalid status or credit not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Credit not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function updateCompanyCredit(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -863,6 +1816,57 @@ async function updateCompanyCredit(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/users:
+ *   get:
+ *     summary: Get company users
+ *     description: Retrieve all users (clients) associated with the authenticated company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *         description: Number of results to return
+ *         example: 20
+ *       - in: query
+ *         name: skip
+ *         schema:
+ *           type: number
+ *         description: Number of results to skip
+ *         example: 0
+ *     responses:
+ *       200:
+ *         description: Company users retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCompanyUsers(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -910,6 +1914,60 @@ async function getCompanyUsers(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/users/{user_id}:
+ *   get:
+ *     summary: Get company user by ID
+ *     description: Retrieve detailed information about a specific user (client)
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 phone:
+ *                   type: string
+ *                 created_at:
+ *                   type: string
+ *                   format: date-time
+ *                 status:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCompanyUserById(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -952,6 +2010,77 @@ async function getCompanyUserById(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/users/{user_id}:
+ *   patch:
+ *     summary: Update company user
+ *     description: Update user (client) information
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: User name
+ *                 example: "João Silva"
+ *               phone:
+ *                 type: string
+ *                 description: User phone number
+ *                 example: "5511999999999"
+ *               password:
+ *                 type: string
+ *                 description: User password
+ *                 example: "newPassword123"
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User updated successfully"
+ *       400:
+ *         description: Invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function updateCompanyUser(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -997,6 +2126,58 @@ async function updateCompanyUser(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/users/{user_id}:
+ *   delete:
+ *     summary: Delete company user
+ *     description: Delete a user (client) from the company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User deleted successfully"
+ *       400:
+ *         description: Cannot delete last user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function deleteCompanyUser(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -1046,6 +2227,58 @@ async function deleteCompanyUser(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/consumers/{consumer_id}/credits/{credit_id}:
+ *   delete:
+ *     summary: Delete consumer credit
+ *     description: Delete a specific credit from a consumer
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: consumer_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Consumer ID
+ *       - in: path
+ *         name: credit_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Credit ID
+ *     responses:
+ *       200:
+ *         description: Credit deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Credit deleted successfully"
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Credit not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function deleteConsumerCredit(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -1093,6 +2326,52 @@ async function deleteConsumerCredit(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/consumers/{consumer_id}:
+ *   delete:
+ *     summary: Delete consumer
+ *     description: Delete a consumer from the company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: consumer_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Consumer ID
+ *     responses:
+ *       200:
+ *         description: Consumer deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Consumer deleted successfully"
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Consumer not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function deleteConsumer(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -1127,6 +2406,62 @@ async function deleteConsumer(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/users:
+ *   post:
+ *     summary: Create company user
+ *     description: Create a new user (client) for the authenticated company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: User name
+ *                 example: "João Silva"
+ *               phone:
+ *                 type: string
+ *                 description: User phone number
+ *                 example: "5511999999999"
+ *     responses:
+ *       200:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User created successfully"
+ *       400:
+ *         description: Invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function createCompanyUser(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -1169,6 +2504,98 @@ async function createCompanyUser(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/companies/stats:
+ *   get:
+ *     summary: Get company statistics
+ *     description: Retrieve dashboard statistics for the authenticated company
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Company statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 recentClients:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       phone:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                 newClientsChart:
+ *                   type: object
+ *                   properties:
+ *                     dataKey:
+ *                       type: string
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           week:
+ *                             type: string
+ *                           count:
+ *                             type: number
+ *                     total:
+ *                       type: number
+ *                 creditsGivenChart:
+ *                   type: object
+ *                   properties:
+ *                     dataKey:
+ *                       type: string
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           week:
+ *                             type: string
+ *                           count:
+ *                             type: number
+ *                     total:
+ *                       type: number
+ *                 creditsUsedChart:
+ *                   type: object
+ *                   properties:
+ *                     dataKey:
+ *                       type: string
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           week:
+ *                             type: string
+ *                           count:
+ *                             type: number
+ *                     total:
+ *                       type: number
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCompanyStats(req, res, next) {
   try {
     const { company_id } = req.user;
@@ -1481,7 +2908,7 @@ async function validateConsumer(options) {
     });
   }
 
-  // Verificar se o consumer tem créditos da empresa
+  // Check if consumer has credits from the company
   const creditHandlerOptions = {
     filter: {
       user_id: consumer._id,

@@ -5,6 +5,75 @@ const knownLocationModel = require("../models/knownlocation.model");
 
 const knownLocationHandler = dbHandler(knownLocationModel);
 
+/**
+ * @swagger
+ * /v1/utils/cep:
+ *   get:
+ *     summary: Get address by CEP
+ *     description: Retrieve address information from Brazilian postal code (CEP)
+ *     tags: [Utils]
+ *     parameters:
+ *       - in: query
+ *         name: cep
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Brazilian postal code (CEP)
+ *         example: "01310-100"
+ *     responses:
+ *       200:
+ *         description: Address information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 cep:
+ *                   type: string
+ *                   example: "01310-100"
+ *                 logradouro:
+ *                   type: string
+ *                   example: "Avenida Paulista"
+ *                 complemento:
+ *                   type: string
+ *                   example: ""
+ *                 bairro:
+ *                   type: string
+ *                   example: "Bela Vista"
+ *                 localidade:
+ *                   type: string
+ *                   example: "São Paulo"
+ *                 uf:
+ *                   type: string
+ *                   example: "SP"
+ *                 ibge:
+ *                   type: string
+ *                   example: "3550308"
+ *                 gia:
+ *                   type: string
+ *                   example: "1004"
+ *                 ddd:
+ *                   type: string
+ *                   example: "11"
+ *                 siafi:
+ *                   type: string
+ *                   example: "7107"
+ *                 updated_at:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid CEP format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: CEP not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCEP(req, res, next) {
   try {
     const { cep } = req.query;
@@ -47,6 +116,83 @@ async function getCEP(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/utils/coordinates:
+ *   get:
+ *     summary: Get coordinates by address
+ *     description: Retrieve geographic coordinates from address information
+ *     tags: [Utils]
+ *     parameters:
+ *       - in: query
+ *         name: street
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Street name
+ *         example: "Avenida Paulista"
+ *       - in: query
+ *         name: number
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Street number
+ *         example: "1000"
+ *       - in: query
+ *         name: neighborhood
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Neighborhood
+ *         example: "Bela Vista"
+ *       - in: query
+ *         name: city
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: City name
+ *         example: "São Paulo"
+ *       - in: query
+ *         name: state
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: State abbreviation
+ *         example: "SP"
+ *       - in: query
+ *         name: zipcode
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ZIP code
+ *         example: "01310-100"
+ *     responses:
+ *       200:
+ *         description: Coordinates retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 lat:
+ *                   type: number
+ *                   example: -23.5505
+ *                 lng:
+ *                   type: number
+ *                   example: -46.6333
+ *       400:
+ *         description: Invalid address format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Address not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function getCoordinates(req, res, next) {
   try {
     const { street, neighborhood, city, state, zipcode, number } = req.query;

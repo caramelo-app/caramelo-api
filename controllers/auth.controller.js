@@ -19,6 +19,87 @@ const { UnauthorizedError, ServiceError, ValidationError } = require("../infra/e
 const userHandler = dbHandler(userModel);
 const companyHandler = dbHandler(companyModel);
 
+/**
+ * @swagger
+ * /v1/auth/login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticate user with phone and password
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *               - password
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 description: User phone number
+ *                 example: "5511999999999"
+ *               password:
+ *                 type: string
+ *                 description: User password
+ *                 example: "password123"
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 tokenType:
+ *                   type: string
+ *                   example: "Bearer"
+ *                 accessToken:
+ *                   type: string
+ *                   description: JWT access token
+ *                 expiresIn:
+ *                   type: number
+ *                   description: Token expiration time in seconds
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       enum: [consumer, client]
+ *                     phone:
+ *                       type: string
+ *                 company:
+ *                   type: object
+ *                   description: Company data (only for client users)
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     address:
+ *                       type: object
+ *                     logo:
+ *                       type: string
+ *                     segment:
+ *                       type: object
+ *                     document:
+ *                       type: string
+ *       400:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function login(req, res, next) {
   const { phone, password } = req.body;
 
@@ -113,6 +194,60 @@ async function login(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/auth/register:
+ *   post:
+ *     summary: User registration
+ *     description: Register a new consumer user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *               - name
+ *               - password
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 description: User phone number
+ *                 example: "5511999999999"
+ *               name:
+ *                 type: string
+ *                 description: User full name
+ *                 example: "João Silva"
+ *               password:
+ *                 type: string
+ *                 description: User password
+ *                 example: "password123"
+ *     responses:
+ *       200:
+ *         description: Registration successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Registration successful. Check your phone for validation code."
+ *       400:
+ *         description: Invalid data or phone already in use
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: SMS service error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function register(req, res, next) {
   const { phone, name, password } = req.body;
 
@@ -166,6 +301,56 @@ async function register(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/auth/forgot-password:
+ *   post:
+ *     summary: Forgot password
+ *     description: Send password reset token via SMS
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 description: User phone number
+ *                 example: "5511999999999"
+ *     responses:
+ *       200:
+ *         description: Reset token sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Password reset token sent to your phone."
+ *       400:
+ *         description: Invalid phone number
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: SMS service error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function forgotPassword(req, res, next) {
   const { phone } = req.body;
 
@@ -220,6 +405,55 @@ async function forgotPassword(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/auth/validate-reset-token:
+ *   post:
+ *     summary: Validate reset token
+ *     description: Validate password reset token before allowing password reset
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - phone
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Reset token received via SMS
+ *                 example: "12345"
+ *               phone:
+ *                 type: string
+ *                 description: User phone number
+ *                 example: "5511999999999"
+ *     responses:
+ *       200:
+ *         description: Token validated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Token validated successfully."
+ *       400:
+ *         description: Invalid token or phone
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token expired or user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function validateResetToken(req, res, next) {
   try {
     const { token, phone } = req.body;
@@ -242,6 +476,55 @@ async function validateResetToken(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/auth/validate-register-token:
+ *   post:
+ *     summary: Validate registration token
+ *     description: Validate registration token to activate user account
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - phone
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Registration token received via SMS
+ *                 example: "12345"
+ *               phone:
+ *                 type: string
+ *                 description: User phone number
+ *                 example: "5511999999999"
+ *     responses:
+ *       200:
+ *         description: Account activated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Account activated successfully."
+ *       400:
+ *         description: Invalid token or phone
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token expired or user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function validateRegisterToken(req, res, next) {
   const { token, phone } = req.body;
 
@@ -268,6 +551,60 @@ async function validateRegisterToken(req, res, next) {
   }
 }
 
+/**
+ * @swagger
+ * /v1/auth/reset-password:
+ *   post:
+ *     summary: Reset password
+ *     description: Reset user password with token validation
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - phone
+ *               - password
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Reset token received via SMS
+ *                 example: "12345"
+ *               phone:
+ *                 type: string
+ *                 description: User phone number
+ *                 example: "5511999999999"
+ *               password:
+ *                 type: string
+ *                 description: New password
+ *                 example: "newpassword123"
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Password reset successfully."
+ *       400:
+ *         description: Invalid token, phone, or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Token expired or user not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 async function resetPassword(req, res, next) {
   const { phone, password, token } = req.body;
 

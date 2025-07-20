@@ -4,6 +4,8 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpecs = require("./infra/swagger/swagger");
 
 const routes = require("./routes");
 const { globalRateLimit, globalSlowDown } = require("./infra/middleware/rateLimiting");
@@ -39,10 +41,16 @@ if (process.env.NODE_ENV !== "test") {
   app.use(globalSlowDown);
 }
 
-// Rotas
+// Swagger documentation
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: "Caramelo API Documentation"
+}));
+
+// Routes
 app.use("/api", routes);
 
-// Handler para rotas não encontradas (404)
+// Handler for routes not found (404)
 app.use((req, res) => {
   const error = new NotFoundError({
     message: localize("error.generic.notFound", { resource: "URL" }),
