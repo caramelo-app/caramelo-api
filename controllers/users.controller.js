@@ -15,6 +15,73 @@ const cardHandler = dbHandler(cardModel);
 const creditHandler = dbHandler(creditModel);
 const companyHandler = dbHandler(companyModel);
 
+// Validation functions
+function validateCompanyId(companyId) {
+  if (!companyId) {
+    throw new ValidationError({
+      message: localize("error.generic.required", { field: "company_id" })
+    });
+  }
+  
+  return true;
+}
+
+function validateCardId(cardId) {
+  if (!cardId) {
+    throw new ValidationError({
+      message: localize("error.generic.required", { field: "card_id" })
+    });
+  }
+  
+  return true;
+}
+
+function validatePhone(phone) {
+  if (phone) {
+    const phoneRegex = /^[0-9]{13}$/;
+    if (!phoneRegex.test(phone)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "phone" })
+      });
+    }
+  }
+  
+  return true;
+}
+
+function validateEmail(email) {
+  if (email) {
+    const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i;
+    if (!emailRegex.test(email)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "email" })
+      });
+    }
+  }
+  
+  return true;
+}
+
+function validateName(name) {
+  if (name && name.length < 1) {
+    throw new ValidationError({
+      message: localize("error.generic.invalidFormat", { field: "name" })
+    });
+  }
+  
+  return true;
+}
+
+function validatePassword(password) {
+  if (password && password.length < 3) {
+    throw new ValidationError({
+      message: localize("error.generic.invalidFormat", { field: "password" })
+    });
+  }
+  
+  return true;
+}
+
 /**
  * @swagger
  * /v1/users/cards:
@@ -192,6 +259,8 @@ async function getCards(req, res, next) {
  */
 async function getCompaniesCards(req, res, next) {
   try {
+    // Validate input
+    validateCompanyId(req.params.company_id);
     let cards = [];
 
     const companyHandlerOptions = {
@@ -289,6 +358,8 @@ async function getCompaniesCards(req, res, next) {
  */
 async function requestCard(req, res, next) {
   try {
+    // Validate input
+    validateCardId(req.params.card_id);
     const cardHandlerOptions = {
       filter: {
         _id: req.params.card_id,
@@ -465,6 +536,12 @@ async function updateProfile(req, res, next) {
     if (!name && !email && !phone && !password) {
       throw new ValidationError();
     }
+
+    // Validate input fields if provided
+    if (name) validateName(name);
+    if (email) validateEmail(email);
+    if (phone) validatePhone(phone);
+    if (password) validatePassword(password);
 
     const userHandlerOptions = {
       filter: {

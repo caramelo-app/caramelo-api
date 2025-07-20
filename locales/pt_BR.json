@@ -1,228 +1,232 @@
 {
-  "error": {
-    "generic": {
-      "notFound": "{{resource}} não encontrado",
-      "required": "{{field}} é obrigatório",
-      "fieldNotFound": "O campo {{field}} não foi encontrado",
-      "invalid": "{{field}} é inválido",
-      "invalidFormat": "O formato do campo {{field}} é inválido",
-      "invalidFormatMessage": "É esperado o formato {{format}} para o campo {{field}}",
-      "notFoundActionMessage": "Verifique se o {{resource}} existe e tente novamente",
-      "alreadyInUse": "O valor {{value}} para o campo {{field}} já está em uso",
-      "alreadyExists": "{{resource}} já existe",
-      "notAvailable": "{{resource}} não está disponível para esta ação"
-    },
-    "infra": {
-      "route": {
-        "action": "Verifique se a rota existe e tente novamente"
-      },
-      "model": {
-        "user": {
-          "email": {
-            "invalid": "O email {{email}} é inválido"
-          },
-          "phone": {
-            "invalid": "O telefone {{phone}} é inválido"
-          }
-        },
-        "company": {
-          "document": {
-            "invalid": "O documento {{document}} é inválido"
-          }
-        }
-      }
-    },
-    "InternalServerError": {
-      "message": "Um erro inesperado ocorreu",
-      "action": "Tente novamente em 5 minutos. Se o erro continuar, contate nosso suporte"
-    },
-    "ServiceError": {
-      "action": "Tente novamente em 5 minutos. Verifique se o serviço está disponível"
-    },
-    "ValidationError": {
-      "message": "Erro de validação",
-      "action": "Verifique os parâmetros da requisição"
-    },
-    "NotFoundError": {
-      "message": "Não encontrado",
-      "action": "Verifique se a rota existe e tente novamente"
-    },
-    "UnauthorizedError": {
-      "message": "Erro ao autenticar",
-      "action": "Verifique se o usuário existe e tente novamente",
-      "tokenNotFound": "Verifique se o token foi fornecido e tente novamente"
-    },
-    "ForbiddenError": {
-      "action": "Verifique se o usuário tem permissão para acessar a rota",
-      "message": "Acesso negado"
-    },
-    "dbHandler": {
-      "create": {
-        "message": "Erro ao criar o documento"
-      },
-      "list": {
-        "message": "Erro ao listar os documentos"
-      },
-      "read": {
-        "message": "Erro ao ler o documento"
-      },
-      "update": {
-        "message": "Erro ao atualizar o documento"
-      },
-      "remove": {
-        "message": "Erro ao remover o documento"
-      },
-      "aggregate": {
-        "message": "Erro ao agregrar os documentos"
-      },
-      "createMany": {
-        "message": "Erro ao criar múltiplos documentos"
-      }
-    },
-    "utils": {
-      "cep": {
-        "service": "O serviço de CEP retornou uma resposta inválida ou o CEP fornecido é inválido",
-        "cause": "Todos os serviços de CEP retornaram erro.",
-        "action": "Tente novamente em 5 minutos ou tente outro CEP"
-      },
-      "coordinates": {
-        "cause": "O endereço fornecido não foi encontrado",
-        "action": "Verifique se o endereço está correto"
-      }
-    },
-    "services": {
-      "sms": {
-        "message": "Erro ao enviar o SMS",
-        "action": "Verifique se o número de telefone está correto e tente novamente"
-      }
-    },
-    "rateLimiting": {
-      "global": {
-        "message": "Muitas requisições em pouco tempo",
-        "action": "Aguarde alguns minutos antes de tentar novamente"
-      },
-      "auth": {
-        "message": "Muitas tentativas de login em pouco tempo",
-        "action": "Aguarde 15 minutos antes de tentar fazer login novamente"
-      },
-      "createAccount": {
-        "message": "Muitas tentativas de criação de conta",
-        "action": "Aguarde 1 hora antes de tentar criar uma nova conta"
-      },
-      "passwordReset": {
-        "message": "Muitas tentativas de reset de senha",
-        "action": "Aguarde 1 hora antes de tentar resetar a senha novamente"
-      },
-      "creditOperations": {
-        "message": "Muitas operações de crédito em pouco tempo",
-        "action": "Aguarde alguns minutos antes de realizar mais operações"
-      },
-      "authenticatedUser": {
-        "message": "Muitas requisições em pouco tempo",
-        "action": "Aguarde alguns minutos antes de continuar"
-      }
-    },
-    "auth": {
-      "token": {
-        "expired": "Token expirado"
-      }
-    }
-  },
-  "test": {
-    "key": "Hello, {{name}}!"
-  },
-  "resources": {
-    "user": "Usuário",
-    "company": "Empresa",
-    "credit": "Crédito",
-    "card": "Cartão",
-    "consumer": "Cliente"
-  },
-  "auth": {
-    "forgotPassword": {
-      "success": "Token enviado com sucesso"
-    },
-    "validateResetToken": {
-      "success": "Token validado com sucesso"
-    },
-    "resetPassword": {
-      "success": "Senha resetada com sucesso"
-    },
-    "register": {
-      "success": "Usuário criado com sucesso"
-    },
-    "validateRegisterToken": {
-      "success": "Token validado com sucesso",
-      "userNotAvailable": "O usuário não está disponível para esta ação"
-    }
-  },
-  "users": {
-    "cards": {
-      "request": {
-        "success": "Crédito solicitado com sucesso"
-      }
-    },
-    "profile": {
-      "update": {
-        "success": "Perfil atualizado com sucesso"
-      },
-      "cancel": {
-        "success": "Conta cancelada com sucesso"
-      }
-    }
-  },
-  "companies": {
-    "profile": {
-      "update": {
-        "success": "Perfil atualizado com sucesso"
-      },
-      "cancel": {
-        "success": "Conta cancelada com sucesso"
-      }
-    },
-    "consumers": {
-      "create": {
-        "success": "Cliente criado com sucesso"
-      },
-      "updateCredits": {
-        "success": "Créditos atualizados com sucesso",
-        "error": {
-          "action": "Verifique se o recurso existe e tente novamente"
-        }
-      },
-      "update": {
-        "success": "Cliente atualizado com sucesso"
-      },
-      "delete": {
-        "success": "Cliente deletado com sucesso"
-      },
-      "deleteCredit": {
-        "success": "Crédito removido com sucesso"
-      }
-    },
-    "cards": {
-      "delete": {
-        "success": "Cartão deletado com sucesso"
-      }
-    },
-    "credits": {
-      "update": {
-        "success": "Crédito atualizado com sucesso"
-      }
-    },
-    "users": {
-      "update": {
-        "success": "Usuário atualizado com sucesso"
-      },
-      "delete": {
-        "success": "Usuário deletado com sucesso",
-        "error": {
-          "lastUser": "Este é o único usuário da empresa. Para desativar a conta, entre em contato com o suporte"
-        }
-      },
-      "create": {
-        "success": "Usuário criado com sucesso"
-      }
-    }
-  }
+	"error": {
+		"generic": {
+			"notFound": "{{resource}} não encontrado",
+			"required": "{{field}} é obrigatório",
+			"fieldNotFound": "O campo {{field}} não foi encontrado",
+			"invalid": "{{field}} é inválido",
+			"invalidFormat": "O formato do campo {{field}} é inválido",
+			"invalidFormatMessage": "É esperado o formato {{format}} para o campo {{field}}",
+			"notFoundActionMessage": "Verifique se o {{resource}} existe e tente novamente",
+			"alreadyInUse": "O valor {{value}} para o campo {{field}} já está em uso",
+			"alreadyExists": "{{resource}} já existe",
+			"notAvailable": "{{resource}} não está disponível para esta ação"
+		},
+		"infra": {
+			"route": {
+				"action": "Verifique se a rota existe e tente novamente"
+			},
+			"model": {
+				"user": {
+					"email": {
+						"invalid": "O email {{email}} é inválido"
+					},
+					"phone": {
+						"invalid": "O telefone {{phone}} é inválido"
+					}
+				},
+				"company": {
+					"document": {
+						"invalid": "O documento {{document}} é inválido"
+					}
+				}
+			}
+		},
+		"InternalServerError": {
+			"message": "Um erro inesperado ocorreu",
+			"action": "Tente novamente em 5 minutos. Se o erro continuar, contate nosso suporte"
+		},
+		"ServiceError": {
+			"action": "Tente novamente em 5 minutos. Verifique se o serviço está disponível"
+		},
+		"ValidationError": {
+			"message": "Erro de validação",
+			"action": "Verifique os parâmetros da requisição"
+		},
+		"NotFoundError": {
+			"message": "Não encontrado",
+			"action": "Verifique se a rota existe e tente novamente"
+		},
+		"UnauthorizedError": {
+			"message": "Erro ao autenticar",
+			"action": "Verifique se o usuário existe e tente novamente",
+			"tokenNotFound": "Verifique se o token foi fornecido e tente novamente"
+		},
+		"ForbiddenError": {
+			"action": "Verifique se o usuário tem permissão para acessar a rota",
+			"message": "Acesso negado"
+		},
+		"dbHandler": {
+			"create": {
+				"message": "Erro ao criar o documento"
+			},
+			"list": {
+				"message": "Erro ao listar os documentos"
+			},
+			"read": {
+				"message": "Erro ao ler o documento"
+			},
+			"update": {
+				"message": "Erro ao atualizar o documento"
+			},
+			"remove": {
+				"message": "Erro ao remover o documento"
+			},
+			"aggregate": {
+				"message": "Erro ao agregrar os documentos"
+			},
+			"createMany": {
+				"message": "Erro ao criar múltiplos documentos"
+			}
+		},
+		"utils": {
+			"cep": {
+				"service": "O serviço de CEP retornou uma resposta inválida ou o CEP fornecido é inválido",
+				"cause": "Todos os serviços de CEP retornaram erro.",
+				"action": "Tente novamente em 5 minutos ou tente outro CEP"
+			},
+			"coordinates": {
+				"cause": "O endereço fornecido não foi encontrado",
+				"action": "Verifique se o endereço está correto"
+			}
+		},
+		"services": {
+			"sms": {
+				"message": "Erro ao enviar o SMS",
+				"action": "Verifique se o número de telefone está correto e tente novamente"
+			}
+		},
+		"rateLimiting": {
+			"global": {
+				"message": "Muitas requisições em pouco tempo",
+				"action": "Aguarde alguns minutos antes de tentar novamente"
+			},
+			"auth": {
+				"message": "Muitas tentativas de login em pouco tempo",
+				"action": "Aguarde 15 minutos antes de tentar fazer login novamente"
+			},
+			"createAccount": {
+				"message": "Muitas tentativas de criação de conta",
+				"action": "Aguarde 1 hora antes de tentar criar uma nova conta"
+			},
+			"passwordReset": {
+				"message": "Muitas tentativas de reset de senha",
+				"action": "Aguarde 1 hora antes de tentar resetar a senha novamente"
+			},
+			"creditOperations": {
+				"message": "Muitas operações de crédito em pouco tempo",
+				"action": "Aguarde alguns minutos antes de realizar mais operações"
+			},
+			"authenticatedUser": {
+				"message": "Muitas requisições em pouco tempo",
+				"action": "Aguarde alguns minutos antes de continuar"
+			}
+		},
+		"auth": {
+			"token": {
+				"expired": "Token expirado"
+			}
+		},
+		"BadRequestError": {
+			"message": "Requisição inválida",
+			"action": "Verifique os parâmetros da requisição e tente novamente"
+		}
+	},
+	"test": {
+		"key": "Hello, {{name}}!"
+	},
+	"resources": {
+		"user": "Usuário",
+		"company": "Empresa",
+		"credit": "Crédito",
+		"card": "Cartão",
+		"consumer": "Cliente"
+	},
+	"auth": {
+		"forgotPassword": {
+			"success": "Token enviado com sucesso"
+		},
+		"validateResetToken": {
+			"success": "Token validado com sucesso"
+		},
+		"resetPassword": {
+			"success": "Senha resetada com sucesso"
+		},
+		"register": {
+			"success": "Usuário criado com sucesso"
+		},
+		"validateRegisterToken": {
+			"success": "Token validado com sucesso",
+			"userNotAvailable": "O usuário não está disponível para esta ação"
+		}
+	},
+	"users": {
+		"cards": {
+			"request": {
+				"success": "Crédito solicitado com sucesso"
+			}
+		},
+		"profile": {
+			"update": {
+				"success": "Perfil atualizado com sucesso"
+			},
+			"cancel": {
+				"success": "Conta cancelada com sucesso"
+			}
+		}
+	},
+	"companies": {
+		"profile": {
+			"update": {
+				"success": "Perfil atualizado com sucesso"
+			},
+			"cancel": {
+				"success": "Conta cancelada com sucesso"
+			}
+		},
+		"consumers": {
+			"create": {
+				"success": "Cliente criado com sucesso"
+			},
+			"updateCredits": {
+				"success": "Créditos atualizados com sucesso",
+				"error": {
+					"action": "Verifique se o recurso existe e tente novamente"
+				}
+			},
+			"update": {
+				"success": "Cliente atualizado com sucesso"
+			},
+			"delete": {
+				"success": "Cliente deletado com sucesso"
+			},
+			"deleteCredit": {
+				"success": "Crédito removido com sucesso"
+			}
+		},
+		"cards": {
+			"delete": {
+				"success": "Cartão deletado com sucesso"
+			}
+		},
+		"credits": {
+			"update": {
+				"success": "Crédito atualizado com sucesso"
+			}
+		},
+		"users": {
+			"update": {
+				"success": "Usuário atualizado com sucesso"
+			},
+			"delete": {
+				"success": "Usuário deletado com sucesso",
+				"error": {
+					"lastUser": "Este é o único usuário da empresa. Para desativar a conta, entre em contato com o suporte"
+				}
+			},
+			"create": {
+				"success": "Usuário criado com sucesso"
+			}
+		}
+	}
 }

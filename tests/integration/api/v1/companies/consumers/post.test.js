@@ -273,7 +273,7 @@ describe("POST /api/v1/companies/consumers", () => {
 
         expect(response.status).toBe(400);
         expect(body.name).toBe("ValidationError");
-        expect(body.message).toBe(localize("error.ValidationError.message"));
+        expect(body.message).toBe(localize("error.generic.required", { field: "phone" }));
         expect(body.action).toBe(localize("error.ValidationError.action"));
       });
 

@@ -163,26 +163,6 @@ describe("GET /api/v1/utils/coordinates", () => {
       );
     });
 
-    // Note: This test is disabled because Google Maps API is too good at finding addresses
-    // Even completely invalid addresses sometimes return partial matches
-    // eslint-disable-next-line jest/no-commented-out-tests
-    /*test.skip("Invalid address returns service error", async () => {
-      const queryString = "street=XXXXXXXXX&neighborhood=XXXXXXXXX&city=XXXXXXXXX&state=XX&zipcode=00000-000&number=999999";
-
-      const response = await fetch(`${endpoint}?${queryString}`);
-      const body = await response.json();
-
-      expect(response.status).toBe(503);
-      expect(body).toEqual(
-        expect.objectContaining({
-          name: "ServiceError",
-          status_code: 503,
-          message: expect.any(String),
-          action: expect.any(String),
-        }),
-      );
-    });*/
-
     // Cache test - run last to avoid interference with other tests
     test("Valid parameters return coordinates data with cache on second call", async () => {
       const queryString = `street=Rua da Consolação&neighborhood=Consolação&city=São Paulo&state=SP&zipcode=01302-907&number=100`;

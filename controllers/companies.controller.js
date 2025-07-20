@@ -6,6 +6,7 @@ const dbHandler = require("../utils/db-handler.utils");
 const companyModel = require("../models/company.model");
 const statusConsts = require("../constants/status.constants");
 const roleConstants = require("../constants/roles.constants");
+const datesConstants = require("../constants/dates.constants");
 
 const { subTime, processWeeklyStats } = require("../utils/date.utils");
 const { localize } = require("../utils/localization.utils");
@@ -14,6 +15,7 @@ const {
   getClientConsumersAggregation,
   getNewClientsAggregationLast4Weeks,
 } = require("../aggregations/companies.aggregation");
+const { validatePhone } = require("../utils/validation.utils");
 
 const userHandler = dbHandler(userModel);
 const cardHandler = dbHandler(cardModel);
@@ -107,6 +109,29 @@ const companyHandler = dbHandler(companyModel);
 async function exploreCompanies(req, res, next) {
   try {
     let { latitude, longitude, distance, limit, skip } = req.query;
+    
+    // Validate required parameters
+    if (!latitude || !longitude) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "latitude and longitude" })
+      });
+    }
+    
+    // Validate coordinate format
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    
+    if (isNaN(lat) || isNaN(lng)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "coordinates" })
+      });
+    }
+    
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "coordinates" })
+      });
+    }
 
     if (!distance) {
       distance = process.env.EXPLORE_DEFAULT_DISTANCE;
@@ -755,17 +780,27 @@ async function createConsumer(req, res, next) {
     const { name, phone, credits = [] } = req.body;
 
     if (!phone) {
-      throw new ValidationError();
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "phone" })
+      });
     }
 
-    await validateCredits({
-      company_id,
-      credits,
-    });
-
+    if(!validatePhone(phone)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "phone" })
+      });
+    }
+    
     await validateCompany({
       company_id,
     });
+
+    if (credits && credits.length > 0) {
+      await validateCredits({
+        company_id,
+        credits,
+      });
+    }
 
     const userHandlerOptions = {
       filter: {
@@ -1223,6 +1258,33 @@ async function createCompanyCard(req, res, next) {
   try {
     const { company_id } = req.user;
     const { title, credits_needed, credit_expires_at } = req.body;
+    
+    // Validate required fields
+    if (!title) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "title" })
+      });
+    }
+    
+    if (!credits_needed || credits_needed <= 0) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "credits_needed" })
+      });
+    }
+    
+    if (!credit_expires_at || !credit_expires_at.ref_number || !credit_expires_at.ref_type) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "credit_expires_at" })
+      });
+    }
+    
+    // Validate ref_type - only accept types defined in constants
+    const validRefTypes = [datesConstants.TYPES.DAY, datesConstants.TYPES.MONTH, datesConstants.TYPES.YEAR];
+    if (!validRefTypes.includes(credit_expires_at.ref_type)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "credit_expires_at.ref_type" })
+      });
+    }
 
     await validateCompany({
       company_id,
@@ -1339,6 +1401,25 @@ async function updateCompanyCard(req, res, next) {
       card_id,
       company_id,
     });
+
+    // Validate credit_expires_at if provided
+    if (req.body.credit_expires_at) {
+      const { ref_number, ref_type } = req.body.credit_expires_at;
+      
+      if (!ref_number || !ref_type) {
+        throw new ValidationError({
+          message: localize("error.generic.required", { field: "credit_expires_at" })
+        });
+      }
+      
+      // Validate ref_type - only accept types defined in constants
+      const validRefTypes = [datesConstants.TYPES.DAY, datesConstants.TYPES.MONTH, datesConstants.TYPES.YEAR];
+      if (!validRefTypes.includes(ref_type)) {
+        throw new ValidationError({
+          message: localize("error.generic.invalidFormat", { field: "credit_expires_at.ref_type" })
+        });
+      }
+    }
 
     const allowedFields = ["title", "credits_needed", "credit_expires_at"];
 
@@ -2687,6 +2768,21 @@ async function validateCredits(options) {
     return;
   }
 
+  // First validate that all credits have required fields
+  for (const credit of options.credits) {
+    if (!credit.card_id) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "credits.card_id" }),
+      });
+    }
+    if (!credit.quantity) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "credits.quantity" }),
+      });
+    }
+  }
+
+  // Then validate that cards exist and are available
   const cardHandlerOptions = {
     filter: {
       company_id: options.company_id,
@@ -2697,42 +2793,22 @@ async function validateCredits(options) {
 
   const cards = await cardHandler.list(cardHandlerOptions);
 
-  let error;
-
   if (!cards || cards.length === 0) {
-    error = new ForbiddenError({
+    throw new ForbiddenError({
       message: localize("error.generic.notFound", { resource: localize("resources.card") }),
       action: localize("companies.consumers.updateCredits.error.action"),
     });
   }
 
+  // Finally validate that all card_ids exist in the available cards
   for (const credit of options.credits) {
-    if (!credit.card_id || !credit.quantity) {
-      if (!credit.card_id) {
-        error = new ValidationError({
-          message: localize("error.generic.required", { field: "credits.card_id" }),
-        });
-      }
-      if (!credit.quantity) {
-        error = new ValidationError({
-          message: localize("error.generic.required", { field: "credits.quantity" }),
-        });
-      }
-
-      if (cards && cards.length > 0) {
-        const card = cards.find((card) => card._id.toString() === credit.card_id.toString());
-        if (!card) {
-          error = new ForbiddenError({
-            message: localize("error.generic.notFound", { resource: localize("resources.card") }),
-            action: localize("companies.consumers.updateCredits.error.action"),
-          });
-        }
-      }
+    const card = cards.find((card) => card._id.toString() === credit.card_id.toString());
+    if (!card) {
+      throw new ForbiddenError({
+        message: localize("error.generic.notFound", { resource: localize("resources.card") }),
+        action: localize("companies.consumers.updateCredits.error.action"),
+      });
     }
-  }
-
-  if (error) {
-    throw error;
   }
 }
 

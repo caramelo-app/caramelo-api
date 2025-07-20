@@ -170,10 +170,18 @@ describe("GET /api/v1/companies/consumers", () => {
         expect(response.status).toBe(200);
         expect(body.length).toBe(2);
         expect(Array.isArray(body)).toBe(true);
-        expect(body[0].name).toBe(user.documentsCreatedOnMongo[1].name);
-        expect(body[0].phone).toBe(user.documentsCreatedOnMongo[1].phone);
-        expect(body[1].name).toBe(user.documentsCreatedOnMongo[2].name);
-        expect(body[1].phone).toBe(user.documentsCreatedOnMongo[2].phone);
+        
+        // Sort both arrays by name to ensure consistent comparison
+        const sortedBody = body.sort((a, b) => a.name.localeCompare(b.name));
+        const expectedUsers = [
+          user.documentsCreatedOnMongo[1],
+          user.documentsCreatedOnMongo[2]
+        ].sort((a, b) => a.name.localeCompare(b.name));
+        
+        expect(sortedBody[0].name).toBe(expectedUsers[0].name);
+        expect(sortedBody[0].phone).toBe(expectedUsers[0].phone);
+        expect(sortedBody[1].name).toBe(expectedUsers[1].name);
+        expect(sortedBody[1].phone).toBe(expectedUsers[1].phone);
       });
 
       test("Should return 401 status when the user is excluded", async () => {

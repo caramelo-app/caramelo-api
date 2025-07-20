@@ -12,9 +12,10 @@ const statusConsts = require("../constants/status.constants");
 const roleConstants = require("../constants/roles.constants");
 
 const { addTime } = require("../utils/date.utils");
-const { generateToken, isTokenExpired } = require("../utils/token.utils");
+const { generateToken, isTokenExpired, validateToken } = require("../utils/token.utils");
 const { localize } = require("../utils/localization.utils");
 const { UnauthorizedError, ServiceError, ValidationError } = require("../infra/errors");
+const { validatePhone } = require("../utils/validation.utils");
 
 const userHandler = dbHandler(userModel);
 const companyHandler = dbHandler(companyModel);
@@ -104,6 +105,24 @@ async function login(req, res, next) {
   const { phone, password } = req.body;
 
   try {
+    if (!phone) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "phone" })
+      });
+    }
+
+    if(!validatePhone(phone)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "phone" })
+      });
+    }
+
+    if(!password) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "password" })
+      });
+    }
+
     const userOptions = {
       filter: {
         phone,
@@ -252,6 +271,30 @@ async function register(req, res, next) {
   const { phone, name, password } = req.body;
 
   try {
+    if (!phone) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "phone" })
+      });
+    }
+
+    if(!validatePhone(phone)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "phone" })
+      });
+    }
+
+    if (!name) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "name" })
+      });
+    }
+
+    if (!password) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "password" })
+      });
+    }
+
     const user = await userHandler.read({
       filter: { phone },
       projection: { _id: 1 },
@@ -355,10 +398,23 @@ async function forgotPassword(req, res, next) {
   const { phone } = req.body;
 
   try {
+    if (!phone) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "phone" })
+      });
+    }
+
+    if(!validatePhone(phone)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "phone" })
+      });
+    }
+
     const readUserOptions = {
       filter: { phone },
       projection: { _id: 1, phone: 1 },
     };
+
     const user = await userHandler.read(readUserOptions);
 
     if (!user || !user.phone) {
@@ -457,6 +513,30 @@ async function forgotPassword(req, res, next) {
 async function validateResetToken(req, res, next) {
   try {
     const { token, phone } = req.body;
+    
+    if (!token) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "token" })
+      });
+    }
+
+    if(!validateToken(token)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "token" })
+      });
+    }
+
+    if (!phone) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "phone" })
+      });
+    }
+
+    if(!validatePhone(phone)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "phone" })
+      });
+    }
 
     const user = await searchForUser(phone);
     validateTokenEntries(user, token);
@@ -529,6 +609,30 @@ async function validateRegisterToken(req, res, next) {
   const { token, phone } = req.body;
 
   try {
+    if (!token) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "token" })
+      });
+    }
+
+    if(!validateToken(token)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "token" })
+      });
+    }
+
+    if (!phone) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "phone" })
+      });
+    }
+
+    if(!validatePhone(phone)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "phone" })
+      });
+    }
+
     const user = await searchForUser(phone, statusConsts.RESOURCE_STATUS.PENDING, false);
     validateTokenEntries(user, token);
 
@@ -609,6 +713,36 @@ async function resetPassword(req, res, next) {
   const { phone, password, token } = req.body;
 
   try {
+    if (!token) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "token" })
+      });
+    }
+
+    if(!validateToken(token)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "token" })
+      });
+    }
+
+    if (!phone) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "phone" })
+      });
+    }
+
+    if(!validatePhone(phone)) {
+      throw new ValidationError({
+        message: localize("error.generic.invalidFormat", { field: "phone" })
+      });
+    }
+
+    if (!password) {
+      throw new ValidationError({
+        message: localize("error.generic.required", { field: "password" })
+      });
+    }
+
     const user = await searchForUser(phone);
     validateTokenEntries(user, token);
 
