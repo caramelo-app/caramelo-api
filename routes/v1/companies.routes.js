@@ -28,6 +28,11 @@ router.patch("/consumers/:consumer_id", companyController.updateConsumer);
 router.delete("/consumers/:consumer_id", companyController.deleteConsumer);
 router.patch("/consumers/:consumer_id/credits", creditOperationsRateLimit, companyController.updateConsumerCredits);
 router.delete("/consumers/:consumer_id/credits/:credit_id", companyController.deleteConsumerCredit);
+router.post(
+  "/consumers/:consumer_id/cards/:card_id/redeem",
+  creditOperationsRateLimit,
+  companyController.redeemCardBenefits,
+);
 router.get("/cards", companyController.getCompanyCards);
 router.get("/cards/:card_id", companyController.getCompanyCardById);
 router.post("/cards", companyController.createCompanyCard);

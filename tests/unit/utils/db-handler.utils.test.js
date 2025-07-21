@@ -276,12 +276,155 @@ describe("DB Handler Utils", () => {
 
       expect(response.name).toBe("InternalServerError");
     });
+  });
 
-    describe("Get Model Name", () => {
-      test("Should return the model name", async () => {
-        const response = userHandler.getModelName();
-        expect(response).toBe("User");
+  describe("UpdateMany", () => {
+    test("Should update multiple documents successfully", async () => {
+      // Create 3 documents
+      const { documentsCreatedOnMongo } = await orchestrator.createDocumentOnMongo(3, userHandler, [
+        { name: "User1", role: roleConstants.USER_ROLES.CONSUMER },
+        { name: "User2", role: roleConstants.USER_ROLES.CONSUMER },
+        { name: "User3", role: roleConstants.USER_ROLES.CLIENT },
+      ]);
+
+      // Update all consumers to admin role
+      const updateResult = await userHandler.updateMany({
+        filter: { role: roleConstants.USER_ROLES.CONSUMER },
+        data: { role: roleConstants.USER_ROLES.ADMIN },
       });
+
+      expect(updateResult.acknowledged).toBe(true);
+      expect(updateResult.modifiedCount).toBe(2);
+      expect(updateResult.matchedCount).toBe(2);
+
+      // Verify the updates
+      const updatedUsers = await userHandler.list({
+        filter: { _id: { $in: documentsCreatedOnMongo.map((doc) => doc._id) } },
+      });
+
+      const adminUsers = updatedUsers.filter((user) => user.role === roleConstants.USER_ROLES.ADMIN);
+      const clientUsers = updatedUsers.filter((user) => user.role === roleConstants.USER_ROLES.CLIENT);
+
+      expect(adminUsers.length).toBe(2);
+      expect(clientUsers.length).toBe(1);
+    });
+
+    test("Should return 0 modifiedCount when no documents match the filter", async () => {
+      const updateResult = await userHandler.updateMany({
+        filter: { name: "NonExistentUser" },
+        data: { role: roleConstants.USER_ROLES.ADMIN },
+      });
+
+      expect(updateResult.acknowledged).toBe(true);
+      expect(updateResult.modifiedCount).toBe(0);
+      expect(updateResult.matchedCount).toBe(0);
+    });
+
+    test("Should handle complex filters and updates", async () => {
+      // Create documents with different statuses
+      await orchestrator.createDocumentOnMongo(3, userHandler, [
+        { name: "ActiveUser1", status: "available" },
+        { name: "ActiveUser2", status: "available" },
+        { name: "InactiveUser", status: "pending" },
+      ]);
+
+      // Update only available users
+      const updateResult = await userHandler.updateMany({
+        filter: { status: "available" },
+        data: { status: "inactive" },
+      });
+
+      expect(updateResult.acknowledged).toBe(true);
+      expect(updateResult.modifiedCount).toBe(2);
+
+      // Verify only available users were updated
+      const updatedUsers = await userHandler.list({
+        filter: { status: "inactive" },
+      });
+      expect(updatedUsers.length).toBe(2);
+
+      const pendingUsers = await userHandler.list({
+        filter: { status: "pending" },
+      });
+      expect(pendingUsers.length).toBe(1);
+    });
+
+    test("Should handle updates with timestamps", async () => {
+      const { documentsCreatedOnMongo } = await orchestrator.createDocumentOnMongo(2, userHandler);
+
+      const updateResult = await userHandler.updateMany({
+        filter: { _id: { $in: documentsCreatedOnMongo.map((doc) => doc._id) } },
+        data: { name: "UpdatedName" },
+      });
+
+      expect(updateResult.acknowledged).toBe(true);
+      expect(updateResult.modifiedCount).toBe(2);
+
+      // Verify the documents were updated
+      const updatedUsers = await userHandler.list({
+        filter: { _id: { $in: documentsCreatedOnMongo.map((doc) => doc._id) } },
+      });
+
+      updatedUsers.forEach((user) => {
+        expect(user.name).toBe("UpdatedName");
+      });
+    });
+
+    test("Should handle updates with options", async () => {
+      const { documentsCreatedOnMongo } = await orchestrator.createDocumentOnMongo(2, userHandler);
+
+      const updateResult = await userHandler.updateMany({
+        filter: { _id: { $in: documentsCreatedOnMongo.map((doc) => doc._id) } },
+        data: { name: "UpdatedWithOptions" },
+        options: { upsert: false },
+      });
+
+      expect(updateResult.acknowledged).toBe(true);
+      expect(updateResult.modifiedCount).toBe(2);
+    });
+
+    test("Should return ServiceError if filter is not provided", async () => {
+      const response = await userHandler.updateMany({
+        data: { name: "UpdatedName" },
+      });
+
+      expect(response.name).toBe("ServiceError");
+      expect(response.message).toBe(
+        localize("error.generic.notFound", {
+          resource: "options.filter",
+        }),
+      );
+    });
+
+    test("Should return ServiceError if data is not provided", async () => {
+      const response = await userHandler.updateMany({
+        filter: { name: "SomeUser" },
+      });
+
+      expect(response.name).toBe("ServiceError");
+      expect(response.message).toBe(
+        localize("error.generic.notFound", {
+          resource: "options.data",
+        }),
+      );
+    });
+
+    test("Should return ServiceError if both filter and update are not provided", async () => {
+      const response = await userHandler.updateMany({});
+
+      expect(response.name).toBe("ServiceError");
+      expect(response.message).toBe(
+        localize("error.generic.notFound", {
+          resource: "options.filter",
+        }),
+      );
+    });
+  });
+
+  describe("Get Model Name", () => {
+    test("Should return the model name", async () => {
+      const response = userHandler.getModelName();
+      expect(response).toBe("User");
     });
   });
 });

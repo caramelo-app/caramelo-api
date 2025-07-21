@@ -2409,6 +2409,153 @@ async function deleteConsumerCredit(req, res, next) {
 
 /**
  * @swagger
+ * /v1/companies/consumers/{consumer_id}/cards/{card_id}/redeem:
+ *   post:
+ *     summary: Redeem card benefits
+ *     description: Redeem benefits by converting available credits to used status
+ *     tags: [Companies]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: consumer_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Consumer ID
+ *       - in: path
+ *         name: card_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Card ID
+ *     responses:
+ *       200:
+ *         description: Card benefits redeemed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Card benefits redeemed successfully"
+ *                 redeemedCredits:
+ *                   type: number
+ *                   description: Number of credits redeemed
+ *                   example: 5
+ *       400:
+ *         description: Insufficient credits or invalid request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - User must be a client with company access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Consumer, card, or credits not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+async function redeemCardBenefits(req, res, next) {
+  try {
+    const { company_id } = req.user;
+    const { consumer_id, card_id } = req.params;
+
+    await validateCompany({
+      company_id,
+    });
+
+    // Validate consumer exists and has credits from this company
+    await validateConsumer({
+      consumer_id,
+      company_id,
+    });
+
+    // Validate card exists and belongs to the company
+    const card = await validateCard({
+      card_id,
+      company_id,
+      projection: {
+        _id: 1,
+        title: 1,
+        credits_needed: 1,
+        status: 1,
+      },
+    });
+
+    // Get available credits for this consumer and card
+    const availableCredits = await creditHandler.list({
+      filter: {
+        user_id: consumer_id,
+        card_id: card_id,
+        company_id: company_id,
+        status: statusConsts.CREDITS_STATUS.AVAILABLE,
+        excluded: false,
+      },
+      projection: {
+        _id: 1,
+        created_at: 1,
+      },
+      sort: {
+        created_at: 1, // Use oldest credits first (FIFO)
+      },
+    });
+
+    if (availableCredits.length < card.credits_needed) {
+      throw new ValidationError({
+        message: localize("companies.consumers.redeem.insufficientCredits", {
+          needed: card.credits_needed,
+          available: availableCredits.length,
+        }),
+      });
+    }
+
+    // Get the exact number of credits needed (oldest first)
+    const creditsToRedeem = availableCredits.slice(0, card.credits_needed);
+    const creditIds = creditsToRedeem.map((credit) => credit._id);
+
+    // Bulk update credits to USED status with requested_at timestamp
+    const updateResult = await creditHandler.updateMany({
+      filter: {
+        _id: { $in: creditIds },
+      },
+      data: {
+        status: statusConsts.CREDITS_STATUS.USED,
+        requested_at: new Date(),
+      },
+    });
+
+    if (updateResult.modifiedCount !== card.credits_needed) {
+      throw new ValidationError({
+        message: localize("companies.consumers.redeem.updateError"),
+      });
+    }
+
+    return res.status(200).json({
+      message: localize("companies.consumers.redeem.success"),
+      redeemedCredits: card.credits_needed,
+      cardTitle: card.title,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @swagger
  * /v1/companies/consumers/{consumer_id}:
  *   delete:
  *     summary: Delete consumer
@@ -3016,6 +3163,7 @@ module.exports = {
   updateConsumer,
   updateConsumerCredits,
   deleteConsumerCredit,
+  redeemCardBenefits,
   deleteConsumer,
   createCompanyCard,
   updateCompanyCard,

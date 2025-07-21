@@ -123,6 +123,31 @@ module.exports = function (model) {
     }
   };
 
+  methods.updateMany = async (options) => {
+    if (!options?.filter) {
+      return new ServiceError({
+        message: localize("error.generic.notFound", {
+          resource: "options.filter",
+        }),
+      });
+    }
+
+    if (!options?.data) {
+      return new ServiceError({
+        message: localize("error.generic.notFound", {
+          resource: "options.data",
+        }),
+      });
+    }
+
+    try {
+      const result = await model.updateMany(options.filter, options.data, options.options);
+      return result;
+    } catch (error) {
+      return handleError(error, localize("error.dbHandler.updateMany.message"));
+    }
+  };
+
   methods.getModelName = () => {
     return model.modelName;
   };

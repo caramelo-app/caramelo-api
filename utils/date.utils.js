@@ -107,8 +107,7 @@ function processWeeklyStats(items, uniqueField = null, dateField = "created_at")
     }
 
     return weeks;
-  } catch (error) {
-    console.error("Error in processWeeklyStats:", error);
+  } catch {
     return createEmptyWeeklyStats();
   }
 }
