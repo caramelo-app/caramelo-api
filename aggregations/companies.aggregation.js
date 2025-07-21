@@ -30,13 +30,19 @@ function getClientConsumersAggregation(options) {
     {
       $lookup: {
         from: "users",
-        localField: "_id",
-        foreignField: "_id",
+        let: {
+          user_id: "$_id",
+        },
         pipeline: [
           {
             $match: {
-              status: statusConsts.RESOURCE_STATUS.AVAILABLE,
-              excluded: false,
+              $expr: {
+                $and: [
+                  { $eq: ["$_id", "$$user_id"] },
+                  { $eq: ["$status", statusConsts.RESOURCE_STATUS.AVAILABLE] },
+                  { $eq: ["$excluded", false] },
+                ],
+              },
             },
           },
         ],
