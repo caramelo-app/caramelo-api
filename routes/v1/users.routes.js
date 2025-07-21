@@ -24,17 +24,8 @@ const router = express.Router();
 router.use(requireAuth);
 router.use(authenticatedUserRateLimit);
 router.get("/cards", requireConsumer, userController.getCards);
-router.get(
-  "/cards/companies/:company_id/list",
-  requireConsumer,
-  userController.getCompaniesCards,
-);
-router.post(
-  "/cards/:card_id/request",
-  requireConsumer,
-  creditOperationsRateLimit,
-  userController.requestCard,
-);
+router.get("/cards/companies/:company_id/list", requireConsumer, userController.getCompaniesCards);
+router.post("/cards/:card_id/request", requireConsumer, creditOperationsRateLimit, userController.requestCard);
 router.get("/profile", requireConsumer, userController.getProfile);
 router.patch("/profile", requireConsumer, userController.updateProfile);
 router.delete("/profile", requireConsumerOrClient, userController.cancelAccount);

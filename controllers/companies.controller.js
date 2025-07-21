@@ -109,27 +109,27 @@ const companyHandler = dbHandler(companyModel);
 async function exploreCompanies(req, res, next) {
   try {
     let { latitude, longitude, distance, limit, skip } = req.query;
-    
+
     // Validate required parameters
     if (!latitude || !longitude) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "latitude and longitude" })
+        message: localize("error.generic.required", { field: "latitude and longitude" }),
       });
     }
-    
+
     // Validate coordinate format
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
-    
+
     if (isNaN(lat) || isNaN(lng)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "coordinates" })
+        message: localize("error.generic.invalidFormat", { field: "coordinates" }),
       });
     }
-    
+
     if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "coordinates" })
+        message: localize("error.generic.invalidFormat", { field: "coordinates" }),
       });
     }
 
@@ -781,16 +781,16 @@ async function createConsumer(req, res, next) {
 
     if (!phone) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "phone" })
+        message: localize("error.generic.required", { field: "phone" }),
       });
     }
 
-    if(!validatePhone(phone)) {
+    if (!validatePhone(phone)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "phone" })
+        message: localize("error.generic.invalidFormat", { field: "phone" }),
       });
     }
-    
+
     await validateCompany({
       company_id,
     });
@@ -1258,31 +1258,31 @@ async function createCompanyCard(req, res, next) {
   try {
     const { company_id } = req.user;
     const { title, credits_needed, credit_expires_at } = req.body;
-    
+
     // Validate required fields
     if (!title) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "title" })
+        message: localize("error.generic.required", { field: "title" }),
       });
     }
-    
+
     if (!credits_needed || credits_needed <= 0) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "credits_needed" })
+        message: localize("error.generic.required", { field: "credits_needed" }),
       });
     }
-    
+
     if (!credit_expires_at || !credit_expires_at.ref_number || !credit_expires_at.ref_type) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "credit_expires_at" })
+        message: localize("error.generic.required", { field: "credit_expires_at" }),
       });
     }
-    
+
     // Validate ref_type - only accept types defined in constants
     const validRefTypes = [datesConstants.TYPES.DAY, datesConstants.TYPES.MONTH, datesConstants.TYPES.YEAR];
     if (!validRefTypes.includes(credit_expires_at.ref_type)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "credit_expires_at.ref_type" })
+        message: localize("error.generic.invalidFormat", { field: "credit_expires_at.ref_type" }),
       });
     }
 
@@ -1405,18 +1405,18 @@ async function updateCompanyCard(req, res, next) {
     // Validate credit_expires_at if provided
     if (req.body.credit_expires_at) {
       const { ref_number, ref_type } = req.body.credit_expires_at;
-      
+
       if (!ref_number || !ref_type) {
         throw new ValidationError({
-          message: localize("error.generic.required", { field: "credit_expires_at" })
+          message: localize("error.generic.required", { field: "credit_expires_at" }),
         });
       }
-      
+
       // Validate ref_type - only accept types defined in constants
       const validRefTypes = [datesConstants.TYPES.DAY, datesConstants.TYPES.MONTH, datesConstants.TYPES.YEAR];
       if (!validRefTypes.includes(ref_type)) {
         throw new ValidationError({
-          message: localize("error.generic.invalidFormat", { field: "credit_expires_at.ref_type" })
+          message: localize("error.generic.invalidFormat", { field: "credit_expires_at.ref_type" }),
         });
       }
     }

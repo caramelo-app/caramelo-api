@@ -42,10 +42,14 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 // Swagger documentation
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: "Caramelo API Documentation"
-}));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpecs, {
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Caramelo API Documentation",
+  }),
+);
 
 // Routes
 app.use("/api", routes);

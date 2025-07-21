@@ -107,19 +107,19 @@ async function login(req, res, next) {
   try {
     if (!phone) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "phone" })
+        message: localize("error.generic.required", { field: "phone" }),
       });
     }
 
-    if(!validatePhone(phone)) {
+    if (!validatePhone(phone)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "phone" })
+        message: localize("error.generic.invalidFormat", { field: "phone" }),
       });
     }
 
-    if(!password) {
+    if (!password) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "password" })
+        message: localize("error.generic.required", { field: "password" }),
       });
     }
 
@@ -273,25 +273,25 @@ async function register(req, res, next) {
   try {
     if (!phone) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "phone" })
+        message: localize("error.generic.required", { field: "phone" }),
       });
     }
 
-    if(!validatePhone(phone)) {
+    if (!validatePhone(phone)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "phone" })
+        message: localize("error.generic.invalidFormat", { field: "phone" }),
       });
     }
 
     if (!name) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "name" })
+        message: localize("error.generic.required", { field: "name" }),
       });
     }
 
     if (!password) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "password" })
+        message: localize("error.generic.required", { field: "password" }),
       });
     }
 
@@ -400,13 +400,13 @@ async function forgotPassword(req, res, next) {
   try {
     if (!phone) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "phone" })
+        message: localize("error.generic.required", { field: "phone" }),
       });
     }
 
-    if(!validatePhone(phone)) {
+    if (!validatePhone(phone)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "phone" })
+        message: localize("error.generic.invalidFormat", { field: "phone" }),
       });
     }
 
@@ -513,28 +513,28 @@ async function forgotPassword(req, res, next) {
 async function validateResetToken(req, res, next) {
   try {
     const { token, phone } = req.body;
-    
+
     if (!token) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "token" })
+        message: localize("error.generic.required", { field: "token" }),
       });
     }
 
-    if(!validateToken(token)) {
+    if (!validateToken(token)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "token" })
+        message: localize("error.generic.invalidFormat", { field: "token" }),
       });
     }
 
     if (!phone) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "phone" })
+        message: localize("error.generic.required", { field: "phone" }),
       });
     }
 
-    if(!validatePhone(phone)) {
+    if (!validatePhone(phone)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "phone" })
+        message: localize("error.generic.invalidFormat", { field: "phone" }),
       });
     }
 
@@ -611,25 +611,25 @@ async function validateRegisterToken(req, res, next) {
   try {
     if (!token) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "token" })
+        message: localize("error.generic.required", { field: "token" }),
       });
     }
 
-    if(!validateToken(token)) {
+    if (!validateToken(token)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "token" })
+        message: localize("error.generic.invalidFormat", { field: "token" }),
       });
     }
 
     if (!phone) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "phone" })
+        message: localize("error.generic.required", { field: "phone" }),
       });
     }
 
-    if(!validatePhone(phone)) {
+    if (!validatePhone(phone)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "phone" })
+        message: localize("error.generic.invalidFormat", { field: "phone" }),
       });
     }
 
@@ -715,31 +715,31 @@ async function resetPassword(req, res, next) {
   try {
     if (!token) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "token" })
+        message: localize("error.generic.required", { field: "token" }),
       });
     }
 
-    if(!validateToken(token)) {
+    if (!validateToken(token)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "token" })
+        message: localize("error.generic.invalidFormat", { field: "token" }),
       });
     }
 
     if (!phone) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "phone" })
+        message: localize("error.generic.required", { field: "phone" }),
       });
     }
 
-    if(!validatePhone(phone)) {
+    if (!validatePhone(phone)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "phone" })
+        message: localize("error.generic.invalidFormat", { field: "phone" }),
       });
     }
 
     if (!password) {
       throw new ValidationError({
-        message: localize("error.generic.required", { field: "password" })
+        message: localize("error.generic.required", { field: "password" }),
       });
     }
 

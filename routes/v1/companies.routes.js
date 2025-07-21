@@ -1,6 +1,5 @@
 const express = require("express");
 
-
 const companyController = require("../../controllers/companies.controller");
 const { creditOperationsRateLimit, authenticatedUserRateLimit } = require("../../infra/middleware/rateLimiting");
 const {
@@ -12,13 +11,7 @@ const {
 
 const router = express.Router();
 
-router.get(
-  "/explore",
-  requireAuth,
-  requireConsumer,
-  authenticatedUserRateLimit,
-  companyController.exploreCompanies,
-);
+router.get("/explore", requireAuth, requireConsumer, authenticatedUserRateLimit, companyController.exploreCompanies);
 
 router.use(requireAuth);
 router.use(requireClient);
@@ -29,23 +22,12 @@ router.get("/stats", companyController.getCompanyStats);
 router.get("/profile", companyController.getCompanyProfile);
 router.patch("/profile", companyController.updateCompanyProfile);
 router.get("/consumers", companyController.getConsumers);
-router.post(
-  "/consumers",
-  creditOperationsRateLimit,
-  companyController.createConsumer,
-);
+router.post("/consumers", creditOperationsRateLimit, companyController.createConsumer);
 router.get("/consumers/:consumer_id", companyController.getConsumerById);
 router.patch("/consumers/:consumer_id", companyController.updateConsumer);
 router.delete("/consumers/:consumer_id", companyController.deleteConsumer);
-router.patch(
-  "/consumers/:consumer_id/credits",
-  creditOperationsRateLimit,
-  companyController.updateConsumerCredits,
-);
-router.delete(
-  "/consumers/:consumer_id/credits/:credit_id",
-  companyController.deleteConsumerCredit,
-);
+router.patch("/consumers/:consumer_id/credits", creditOperationsRateLimit, companyController.updateConsumerCredits);
+router.delete("/consumers/:consumer_id/credits/:credit_id", companyController.deleteConsumerCredit);
 router.get("/cards", companyController.getCompanyCards);
 router.get("/cards/:card_id", companyController.getCompanyCardById);
 router.post("/cards", companyController.createCompanyCard);

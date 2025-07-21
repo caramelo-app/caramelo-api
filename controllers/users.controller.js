@@ -19,20 +19,20 @@ const companyHandler = dbHandler(companyModel);
 function validateCompanyId(companyId) {
   if (!companyId) {
     throw new ValidationError({
-      message: localize("error.generic.required", { field: "company_id" })
+      message: localize("error.generic.required", { field: "company_id" }),
     });
   }
-  
+
   return true;
 }
 
 function validateCardId(cardId) {
   if (!cardId) {
     throw new ValidationError({
-      message: localize("error.generic.required", { field: "card_id" })
+      message: localize("error.generic.required", { field: "card_id" }),
     });
   }
-  
+
   return true;
 }
 
@@ -41,44 +41,45 @@ function validatePhone(phone) {
     const phoneRegex = /^[0-9]{13}$/;
     if (!phoneRegex.test(phone)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "phone" })
+        message: localize("error.generic.invalidFormat", { field: "phone" }),
       });
     }
   }
-  
+
   return true;
 }
 
 function validateEmail(email) {
   if (email) {
-    const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i;
+    const emailRegex =
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i;
     if (!emailRegex.test(email)) {
       throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "email" })
+        message: localize("error.generic.invalidFormat", { field: "email" }),
       });
     }
   }
-  
+
   return true;
 }
 
 function validateName(name) {
   if (name && name.length < 1) {
     throw new ValidationError({
-      message: localize("error.generic.invalidFormat", { field: "name" })
+      message: localize("error.generic.invalidFormat", { field: "name" }),
     });
   }
-  
+
   return true;
 }
 
 function validatePassword(password) {
   if (password && password.length < 3) {
     throw new ValidationError({
-      message: localize("error.generic.invalidFormat", { field: "password" })
+      message: localize("error.generic.invalidFormat", { field: "password" }),
     });
   }
-  
+
   return true;
 }
 

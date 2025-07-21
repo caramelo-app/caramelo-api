@@ -170,14 +170,13 @@ describe("GET /api/v1/companies/consumers", () => {
         expect(response.status).toBe(200);
         expect(body.length).toBe(2);
         expect(Array.isArray(body)).toBe(true);
-        
+
         // Sort both arrays by name to ensure consistent comparison
         const sortedBody = body.sort((a, b) => a.name.localeCompare(b.name));
-        const expectedUsers = [
-          user.documentsCreatedOnMongo[1],
-          user.documentsCreatedOnMongo[2]
-        ].sort((a, b) => a.name.localeCompare(b.name));
-        
+        const expectedUsers = [user.documentsCreatedOnMongo[1], user.documentsCreatedOnMongo[2]].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+
         expect(sortedBody[0].name).toBe(expectedUsers[0].name);
         expect(sortedBody[0].phone).toBe(expectedUsers[0].phone);
         expect(sortedBody[1].name).toBe(expectedUsers[1].name);
