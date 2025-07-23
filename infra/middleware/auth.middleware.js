@@ -61,44 +61,66 @@ function requireAuth(req, res, next) {
   });
 }
 
-function requireRole(roles) {
-  const allowedRoles = Array.isArray(roles) ? roles : [roles];
 
-  return (req, res, next) => {
-    if (!req.user) {
-      return next(
-        new UnauthorizedError({
-          message: localize("error.UnauthorizedError.message"),
-        }),
-      );
-    }
-
-    if (!allowedRoles.includes(req.user.role)) {
-      return next(
-        new ForbiddenError({
-          message: localize("error.ForbiddenError.message"),
-        }),
-      );
-    }
-
-    next();
-  };
-}
-
-function requireAuthAndRole(roles) {
-  return [requireAuth, requireRole(roles)];
-}
 
 function requireAdmin(req, res, next) {
-  return requireRole(roleConstants.USER_ROLES.ADMIN)(req, res, next);
+  if (!req.user) {
+    return next(
+      new UnauthorizedError({
+        message: localize("error.UnauthorizedError.message"),
+      }),
+    );
+  }
+
+  if (req.user.role !== roleConstants.USER_ROLES.ADMIN) {
+    return next(
+      new ForbiddenError({
+        message: localize("error.ForbiddenError.message"),
+      }),
+    );
+  }
+
+  next();
 }
 
 function requireClient(req, res, next) {
-  return requireRole(roleConstants.USER_ROLES.CLIENT)(req, res, next);
+  if (!req.user) {
+    return next(
+      new UnauthorizedError({
+        message: localize("error.UnauthorizedError.message"),
+      }),
+    );
+  }
+
+  if (req.user.role !== roleConstants.USER_ROLES.CLIENT) {
+    return next(
+      new ForbiddenError({
+        message: localize("error.ForbiddenError.message"),
+      }),
+    );
+  }
+
+  next();
 }
 
 function requireConsumer(req, res, next) {
-  return requireRole(roleConstants.USER_ROLES.CONSUMER)(req, res, next);
+  if (!req.user) {
+    return next(
+      new UnauthorizedError({
+        message: localize("error.UnauthorizedError.message"),
+      }),
+    );
+  }
+
+  if (req.user.role !== roleConstants.USER_ROLES.CONSUMER) {
+    return next(
+      new ForbiddenError({
+        message: localize("error.ForbiddenError.message"),
+      }),
+    );
+  }
+
+  next();
 }
 
 async function requireCompanyAccess(req, res, next) {
@@ -231,13 +253,9 @@ function requireGuest(req, res, next) {
 module.exports = {
   authenticate,
   requireAuth,
-  requireRole,
-  requireAuthAndRole,
   requireAdmin,
   requireClient,
   requireConsumer,
   requireCompanyAccess,
-  requireSelfOrAdmin,
-  optionalAuth,
   requireGuest,
 };
