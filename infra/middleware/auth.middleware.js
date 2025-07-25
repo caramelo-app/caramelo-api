@@ -179,56 +179,6 @@ async function requireCompanyAccess(req, res, next) {
   }
 }
 
-function requireSelfOrAdmin(req, res, next) {
-  if (!req.user) {
-    return next(
-      new UnauthorizedError({
-        message: localize("error.UnauthorizedError.message"),
-      }),
-    );
-  }
-
-  const userId = req.params.user_id || req.params.id;
-
-  if (req.user.role === roleConstants.USER_ROLES.ADMIN) {
-    return next();
-  }
-
-  if (req.user._id.toString() !== userId) {
-    return next(
-      new ForbiddenError({
-        message: localize("error.ForbiddenError.message"),
-      }),
-    );
-  }
-
-  next();
-}
-
-function optionalAuth(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader?.split(" ")[1];
-
-  if (!token) {
-    return next();
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (!err && decoded) {
-      req.user = {
-        _id: decoded._id,
-        role: decoded.role,
-      };
-
-      if (decoded.role === roleConstants.USER_ROLES.CLIENT) {
-        req.user.company_id = decoded.company_id;
-      }
-    }
-
-    next();
-  });
-}
-
 function requireGuest(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader?.split(" ")[1];
