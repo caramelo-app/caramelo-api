@@ -396,9 +396,9 @@ async function getRandomAddresses(req, res, next) {
     }
 
     const countNum = parseInt(count, 10);
-    if (isNaN(countNum) || countNum < 1 || countNum > 50) {
+    if (isNaN(countNum) || countNum < 1 || countNum > 100) {
       throw new ValidationError({
-        message: "Count must be a number between 1 and 50",
+        message: "Count must be a number between 1 and 100",
       });
     }
 
