@@ -43,8 +43,6 @@ describe("POST /v1/companies/consumers/{consumer_id}/cards/{card_id}/redeem", ()
         },
       ]);
 
-      console.log("company", company.documentsCreatedOnMongo[0]);
-
       const user = await orchestrator.createDocumentOnMongo(1, userHandler, [
         {
           status: statusConsts.RESOURCE_STATUS.AVAILABLE,
@@ -62,8 +60,6 @@ describe("POST /v1/companies/consumers/{consumer_id}/cards/{card_id}/redeem", ()
         },
       ]);
 
-      console.log("user", user.documentsCreatedOnMongo[0]);
-
       const card = await orchestrator.createDocumentOnMongo(1, cardHandler, [
         {
           company_id: company.documentsCreatedOnMongo[0]._id,
@@ -73,10 +69,8 @@ describe("POST /v1/companies/consumers/{consumer_id}/cards/{card_id}/redeem", ()
         },
       ]);
 
-      console.log("card", card.documentsCreatedOnMongo[0]);
-
       // Create exactly the number of credits needed
-      const credits = await orchestrator.createDocumentOnMongo(3, creditHandler, [
+      await orchestrator.createDocumentOnMongo(3, creditHandler, [
         {
           user_id: consumer.documentsCreatedOnMongo[0]._id,
           card_id: card.documentsCreatedOnMongo[0]._id,
@@ -99,8 +93,6 @@ describe("POST /v1/companies/consumers/{consumer_id}/cards/{card_id}/redeem", ()
           excluded: false,
         },
       ]);
-
-      console.log("credits", credits.documentsCreatedOnMongo);
 
       const loginResponse = await fetch(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/auth/login`, {
         method: "POST",

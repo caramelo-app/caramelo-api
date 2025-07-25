@@ -464,25 +464,18 @@ async function getRandomAddresses(req, res, next) {
     for (const area of searchAreas) {
       if (addresses.length >= countNum) break;
 
-      console.log(`Searching in area: ${area.lat}, ${area.lng} (radius: ${area.radius}m)`);
-
       // Search for all business types using keywords
       for (const [businessType, keywords] of Object.entries(businessKeywords)) {
         if (addresses.length >= countNum) break;
         
         // Check if we have target required for this type
         if (typeCounts[businessType] >= targetPerType) {
-          console.log(`Skipping ${businessType} - already have ${typeCounts[businessType]} (target: ${targetPerType})`);
           continue;
         }
-
-        console.log(`Searching for ${businessType}... (have: ${typeCounts[businessType]}/${targetPerType})`);
 
         for (const keyword of keywords) {
           if (addresses.length >= countNum) break;
           if (typeCounts[businessType] >= targetPerType) break;
-
-          console.log(`  Searching for keyword: "${keyword}"`);
 
           try {
             const response = await fetch(
@@ -501,21 +494,15 @@ async function getRandomAddresses(req, res, next) {
               continue;
             }
 
-            console.log(`    Found ${data.results ? data.results.length : 0} results for "${keyword}"`);
-
             if (data.results && data.results.length > 0) {
               for (const place of data.results) {
                 if (addresses.length >= countNum) break;
                 if (typeCounts[businessType] >= targetPerType) {
-                  console.log(`    Reached target for ${businessType}, stopping`);
                   break;
                 }
                 if (usedPlaceIds.has(place.place_id)) {
-                  console.log(`    Skipping duplicate place: ${place.name}`);
                   continue;
                 }
-
-                console.log(`    Processing place: ${place.name}`);
 
                 // Get detailed place information
                 const detailResponse = await fetch(
@@ -523,13 +510,12 @@ async function getRandomAddresses(req, res, next) {
                 );
 
                 if (detailResponse.status !== 200) {
-                  console.warn(`    Failed to get details for ${place.name}`);
                   continue;
                 }
 
                 const detailData = await detailResponse.json();
                 if (detailData.status !== "OK") {
-                  console.warn(`    Error getting details for ${place.name}: ${detailData.status}`);
+                  console.warn(`Error getting details for ${place.name}: ${detailData.status}`);
                   continue;
                 }
 
@@ -539,7 +525,7 @@ async function getRandomAddresses(req, res, next) {
                 const placeName = detailData.result.name;
 
                 if (!formattedAddress || !geometry || !geometry.location || !placeName) {
-                  console.warn(`    Missing required data for ${place.name}`);
+                  console.warn(`Missing required data for ${place.name}`);
                   continue;
                 }
 
@@ -557,15 +543,13 @@ async function getRandomAddresses(req, res, next) {
                   });
                   usedPlaceIds.add(place.place_id);
                   typeCounts[businessType]++;
-                  console.log(`    ✅ Added: ${placeName} (${addresses.length}/${countNum}) - ${businessType}: ${typeCounts[businessType]}/${targetPerType}`);
                   
                   // Check if we've reached the target for this type
                   if (typeCounts[businessType] >= targetPerType) {
-                    console.log(`    Reached target for ${businessType}, moving to next type`);
                     break;
                   }
                 } else {
-                  console.warn(`    Failed to parse address for ${place.name}`);
+                  console.warn(`Failed to parse address for ${place.name}`);
                 }
 
                 // Add small delay to avoid rate limiting
@@ -579,13 +563,9 @@ async function getRandomAddresses(req, res, next) {
         }
       }
     }
-
-    console.log(`Total addresses found: ${addresses.length}`);
-    console.log(`Distribution:`, typeCounts);
     
     // Adjust count if we have more than requested
     if (addresses.length > countNum) {
-      console.log(`Adjusting count from ${addresses.length} to ${countNum} by removing random items...`);
       
       // Shuffle array and take only the first countNum items
       for (let i = addresses.length - 1; i > 0; i--) {
@@ -594,30 +574,6 @@ async function getRandomAddresses(req, res, next) {
       }
       
       addresses.splice(countNum);
-      
-      // Recalculate type counts
-      const newTypeCounts = {
-        restaurants: 0,
-        barbershops: 0,
-        petShops: 0,
-        musicStudios: 0
-      };
-      
-      // This is a simplified count - in a real scenario you'd need to track which type each address belongs to
-      console.log(`Adjusted to ${addresses.length} addresses`);
-    }
-    
-    // Check if we have a good distribution
-    const hasGoodDistribution = Object.values(typeCounts).every(count => count > 0);
-    if (!hasGoodDistribution) {
-      console.warn(`⚠️  Warning: Not all business types found. Missing:`, 
-        Object.entries(typeCounts)
-          .filter(([type, count]) => count === 0)
-          .map(([type]) => type)
-          .join(', ')
-      );
-    } else {
-      console.log(`✅ Good distribution achieved!`);
     }
 
     return res.status(200).json(addresses);

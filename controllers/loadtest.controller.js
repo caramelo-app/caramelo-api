@@ -41,7 +41,6 @@ async function fetchRandomAddresses(count = 20) {
     throw new Error("No addresses returned from Google Places API");
   }
   
-  console.log(`Successfully fetched ${addresses.length} addresses from Google Places API`);
   return addresses;
 }
 
@@ -112,8 +111,6 @@ async function generateLoadTestData(req, res, next) {
       });
     }
 
-    console.log(`Starting load test data generation: ${companies} companies, ${consumers} consumers`);
-
     // Step 1: Fetch random addresses from Google Places API
     const addresses = await fetchRandomAddresses(Math.max(companies, 20));
 
@@ -135,8 +132,6 @@ async function generateLoadTestData(req, res, next) {
       cards: createdCompanies.reduce((acc, company) => acc + company.cards.length, 0),
       credits: createdCredits.length,
     };
-
-    console.log(`Load test data generation completed:`, summary);
 
     return res.status(200).json({
       message: "Load test data generated successfully",
@@ -220,7 +215,6 @@ async function createCompanies(count, segments, addresses) {
   }
 
   // Create all companies in batch
-  console.log(`Creating ${count} companies in batch...`);
   const createdCompanies = await companyHandler.createMany({
     data: companiesData,
   });
@@ -302,13 +296,11 @@ async function createCompanies(count, segments, addresses) {
   }
 
   // Create all users in batch
-  console.log(`Creating ${allUsersData.length} users in batch...`);
   const createdUsers = await userHandler.createMany({
     data: allUsersData,
   });
 
   // Create all cards in batch
-  console.log(`Creating ${allCardsData.length} cards in batch...`);
   const createdCards = await cardHandler.createMany({
     data: allCardsData,
   });
@@ -325,7 +317,6 @@ async function createCompanies(count, segments, addresses) {
     companyRelation.cards = companyRelation.cards.map(() => createdCards[cardIndex++]);
   }
 
-  console.log(`Created ${count} companies with users and cards`);
   return companiesWithRelations;
 }
 
@@ -363,7 +354,6 @@ async function createConsumers(count, companies, addresses) {
   }
 
   // Create all consumers in batch
-  console.log(`Creating ${count} consumers in batch...`);
   const createdConsumers = await userHandler.createMany({
     data: consumersData,
   });
@@ -375,7 +365,6 @@ async function createConsumers(count, companies, addresses) {
     cards: allCards,
   }));
 
-  console.log(`Created ${count} consumers`);
   return consumersWithRelations;
 }
 
@@ -424,12 +413,10 @@ async function createCredits(consumers, companies) {
   }
 
   // Create all credits in batch
-  console.log(`Creating ${creditsData.length} credits in batch...`);
   const createdCredits = await creditHandler.createMany({
     data: creditsData,
   });
 
-  console.log(`Created ${createdCredits.length} credits`);
   return createdCredits;
 }
 
