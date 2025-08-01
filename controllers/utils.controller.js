@@ -404,36 +404,16 @@ async function getRandomAddresses(req, res, next) {
 
     // Keywords for all business types (more flexible than type search)
     const businessKeywords = {
-      restaurants: [
-        "pizzaria",
-        "hamburgueria",
-        "café",
-        "hotdog",
-        "cafe",
-        "restaurante",
-        "lanchonete"
-      ],
-      barbershops: [
-        "barbearia",
-        "barber shop",
-        "barbearia masculina",
-        "salão masculino",
-        "barbearia tradicional"
-      ],
-      petShops: [
-        "pet shop",
-        "veterinário",
-        "veterinária",
-        "clínica veterinária",
-        "pet store"
-      ],
+      restaurants: ["pizzaria", "hamburgueria", "café", "hotdog", "cafe", "restaurante", "lanchonete"],
+      barbershops: ["barbearia", "barber shop", "barbearia masculina", "salão masculino", "barbearia tradicional"],
+      petShops: ["pet shop", "veterinário", "veterinária", "clínica veterinária", "pet store"],
       musicStudios: [
         "estúdio musical",
         "estúdio de gravação",
         "estúdio de música",
         "recording studio",
-        "estúdio de som"
-      ]
+        "estúdio de som",
+      ],
     };
 
     const addresses = [];
@@ -442,11 +422,11 @@ async function getRandomAddresses(req, res, next) {
     // Search in different areas of the city
     const searchAreas = [
       { lat: -25.4289, lng: -49.2744, radius: 5000 }, // Centro
-      { lat: -25.4200, lng: -49.2650, radius: 5000 }, // Boa Vista
-      { lat: -25.4150, lng: -49.2600, radius: 5000 }, // Bairro Alto
-      { lat: -25.4250, lng: -49.2700, radius: 5000 }, // São Francisco
-      { lat: -25.4230, lng: -49.2680, radius: 5000 }, // Centro Cívico
-      { lat: -25.4210, lng: -49.2660, radius: 5000 }, // Mercês
+      { lat: -25.42, lng: -49.265, radius: 5000 }, // Boa Vista
+      { lat: -25.415, lng: -49.26, radius: 5000 }, // Bairro Alto
+      { lat: -25.425, lng: -49.27, radius: 5000 }, // São Francisco
+      { lat: -25.423, lng: -49.268, radius: 5000 }, // Centro Cívico
+      { lat: -25.421, lng: -49.266, radius: 5000 }, // Mercês
     ];
 
     // Track how many of each type we've found
@@ -454,7 +434,7 @@ async function getRandomAddresses(req, res, next) {
       restaurants: 0,
       barbershops: 0,
       petShops: 0,
-      musicStudios: 0
+      musicStudios: 0,
     };
 
     // Calculate target per type (round up to ensure we get enough)
@@ -467,7 +447,7 @@ async function getRandomAddresses(req, res, next) {
       // Search for all business types using keywords
       for (const [businessType, keywords] of Object.entries(businessKeywords)) {
         if (addresses.length >= countNum) break;
-        
+
         // Check if we have target required for this type
         if (typeCounts[businessType] >= targetPerType) {
           continue;
@@ -479,7 +459,7 @@ async function getRandomAddresses(req, res, next) {
 
           try {
             const response = await fetch(
-              `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(keyword + " Curitiba")}&location=${area.lat},${area.lng}&radius=${area.radius}&key=${process.env.GOOGLE_MAPS_API_KEY}`
+              `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(keyword + " Curitiba")}&location=${area.lat},${area.lng}&radius=${area.radius}&key=${process.env.GOOGLE_MAPS_API_KEY}`,
             );
 
             if (response.status !== 200) {
@@ -506,7 +486,7 @@ async function getRandomAddresses(req, res, next) {
 
                 // Get detailed place information
                 const detailResponse = await fetch(
-                  `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,geometry,address_components&key=${process.env.GOOGLE_MAPS_API_KEY}`
+                  `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,geometry,address_components&key=${process.env.GOOGLE_MAPS_API_KEY}`,
                 );
 
                 if (detailResponse.status !== 200) {
@@ -538,12 +518,12 @@ async function getRandomAddresses(req, res, next) {
                     name: placeName,
                     coordinates: {
                       lat: geometry.location.lat,
-                      lng: geometry.location.lng
-                    }
+                      lng: geometry.location.lng,
+                    },
                   });
                   usedPlaceIds.add(place.place_id);
                   typeCounts[businessType]++;
-                  
+
                   // Check if we've reached the target for this type
                   if (typeCounts[businessType] >= targetPerType) {
                     break;
@@ -563,16 +543,15 @@ async function getRandomAddresses(req, res, next) {
         }
       }
     }
-    
+
     // Adjust count if we have more than requested
     if (addresses.length > countNum) {
-      
       // Shuffle array and take only the first countNum items
       for (let i = addresses.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [addresses[i], addresses[j]] = [addresses[j], addresses[i]];
       }
-      
+
       addresses.splice(countNum);
     }
 
@@ -605,7 +584,7 @@ function parseAddressComponents(components, formattedAddress, city, state) {
 
     // If we couldn't parse properly, try to extract from formatted address
     if (!street || !number) {
-      const parts = formattedAddress.split(",").map(part => part.trim());
+      const parts = formattedAddress.split(",").map((part) => part.trim());
 
       if (parts.length >= 2) {
         const firstPart = parts[0];

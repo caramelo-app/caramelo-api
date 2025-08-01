@@ -6,4 +6,4 @@ const router = express.Router();
 
 router.post("/generate", generateLoadTestData);
 
-module.exports = router; 
+module.exports = router;

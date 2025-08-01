@@ -33,19 +33,19 @@ const segmentHandler = dbHandler(segmentModel);
 // Function to fetch random addresses from Google Places API
 async function fetchRandomAddresses(count = 20) {
   const response = await fetch(
-    `${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/utils/places?city=Curitiba&state=PR&count=${count}`
+    `${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/v1/utils/places?city=Curitiba&state=PR&count=${count}`,
   );
-  
+
   if (response.status !== 200) {
     throw new Error(`Failed to fetch addresses from Google Places API: ${response.status} ${response.statusText}`);
   }
-  
+
   const addresses = await response.json();
-  
+
   if (!Array.isArray(addresses) || addresses.length === 0) {
     throw new Error("No addresses returned from Google Places API");
   }
-  
+
   return addresses;
 }
 
@@ -119,32 +119,32 @@ async function generateLoadTestData(req, res, next) {
 
     // Inicializa a barra de progresso
     progressBar = new cliProgress.SingleBar({
-      format: 'Progress |{bar}| {percentage}% | {value}/{total} | {stage}',
-      barCompleteChar: '\u2588',
-      barIncompleteChar: '\u2591',
-      hideCursor: true
+      format: "Progress |{bar}| {percentage}% | {value}/{total} | {stage}",
+      barCompleteChar: "\u2588",
+      barIncompleteChar: "\u2591",
+      hideCursor: true,
     });
 
-    progressBar.start(5, 0, { stage: 'Iniciando...' });
+    progressBar.start(5, 0, { stage: "Iniciando..." });
 
     // Step 1: Fetch random addresses from Google Places API
-    progressBar.update(1, { stage: 'Buscando endereços...' });
+    progressBar.update(1, { stage: "Buscando endereços..." });
     const addresses = await fetchRandomAddresses(Math.max(companies, 20));
 
     // Step 2: Get existing segments from database
-    progressBar.update(2, { stage: 'Carregando segmentos...' });
+    progressBar.update(2, { stage: "Carregando segmentos..." });
     const segments = await getExistingSegments();
 
     // Step 3: Create companies with users and cards
-    progressBar.update(3, { stage: 'Criando empresas, usuários e cartões...' });
+    progressBar.update(3, { stage: "Criando empresas, usuários e cartões..." });
     const createdCompanies = await createCompanies(companies, segments, addresses);
 
     // Step 4: Create consumers with credits
-    progressBar.update(4, { stage: 'Criando consumidores...' });
+    progressBar.update(4, { stage: "Criando consumidores..." });
     const createdConsumers = await createConsumers(consumers, createdCompanies, addresses);
 
     // Step 5: Create credits for consumers
-    progressBar.update(5, { stage: 'Criando créditos...' });
+    progressBar.update(5, { stage: "Criando créditos..." });
     const createdCredits = await createCredits(createdConsumers, createdCompanies);
 
     progressBar.stop();
@@ -154,7 +154,7 @@ async function generateLoadTestData(req, res, next) {
       users: {
         consumers: createdConsumers?.length || 0,
         clients: createdCompanies.users?.length || 0,
-        total: (createdCompanies.users?.length || 0) + (createdConsumers?.length || 0)
+        total: (createdCompanies.users?.length || 0) + (createdConsumers?.length || 0),
       },
       cards: createdCompanies.cards?.length || 0,
       credits: createdCredits.length,
@@ -202,30 +202,32 @@ async function createCompanies(count, segments, addresses) {
       excluded = false;
       status = statusConsts.RESOURCE_STATUS.AVAILABLE;
     }
-    companiesData.push(createDummyCompany({
-      name: address.name,
-      address: {
-        ...address,
-        number: address.number + i,
-        location: {
-          type: "Point",
-          coordinates: [
-            address.coordinates.lng + (Math.random() - 0.5) * 0.01,
-            address.coordinates.lat + (Math.random() - 0.5) * 0.01,
-          ],
+    companiesData.push(
+      createDummyCompany({
+        name: address.name,
+        address: {
+          ...address,
+          number: address.number + i,
+          location: {
+            type: "Point",
+            coordinates: [
+              address.coordinates.lng + (Math.random() - 0.5) * 0.01,
+              address.coordinates.lat + (Math.random() - 0.5) * 0.01,
+            ],
+          },
         },
-      },
-      segment: {
-        _id: segment._id,
-        name: segment.name,
-        icon: segment.icon,
-        description: segment.description,
-        status: segment.status,
-        excluded: segment.excluded,
-      },
-      status,
-      excluded,
-    }));
+        segment: {
+          _id: segment._id,
+          name: segment.name,
+          icon: segment.icon,
+          description: segment.description,
+          status: segment.status,
+          excluded: segment.excluded,
+        },
+        status,
+        excluded,
+      }),
+    );
   }
   const createdCompanies = await companyHandler.createMany({ data: companiesData });
 
@@ -239,13 +241,15 @@ async function createCompanies(count, segments, addresses) {
     const userCount = usersPerCompany[i];
     const users = [];
     for (let j = 0; j < userCount; j++) {
-      users.push(createDummyUser({
-        password: "caramelo",
-        role: roleConstants.USER_ROLES.CLIENT,
-        company_id: company._id,
-        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
-        excluded: false,
-      }));
+      users.push(
+        createDummyUser({
+          password: "caramelo",
+          role: roleConstants.USER_ROLES.CLIENT,
+          company_id: company._id,
+          status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+          excluded: false,
+        }),
+      );
     }
     allUsersData.push(...(await Promise.all(users)));
   }
@@ -266,7 +270,7 @@ async function createCompanies(count, segments, addresses) {
       if (cardRandomValue < 0.05) {
         cardExcluded = true;
         cardStatus = statusConsts.RESOURCE_STATUS.AVAILABLE;
-      } else if (cardRandomValue < 0.10) {
+      } else if (cardRandomValue < 0.1) {
         cardExcluded = false;
         cardStatus = statusConsts.RESOURCE_STATUS.UNAVAILABLE;
       } else {
@@ -285,23 +289,25 @@ async function createCompanies(count, segments, addresses) {
         refType = datesConstants.TYPES.YEAR;
         refNumber = 1;
       }
-      cards.push(createDummyCard({
-        company_id: company._id,
-        credits_needed: faker.number.int({ min: 1, max: 10 }),
-        credit_expires_at: { ref_number: refNumber, ref_type: refType },
-        status: cardStatus,
-        excluded: cardExcluded,
-      }));
+      cards.push(
+        createDummyCard({
+          company_id: company._id,
+          credits_needed: faker.number.int({ min: 1, max: 10 }),
+          credit_expires_at: { ref_number: refNumber, ref_type: refType },
+          status: cardStatus,
+          excluded: cardExcluded,
+        }),
+      );
     }
     allCardsData.push(...cards);
   }
   const createdCards = await cardHandler.createMany({ data: allCardsData });
-  
+
   // Retorna os dados estruturados corretamente
   return {
     companies: createdCompanies,
     users: createdUsers,
-    cards: createdCards
+    cards: createdCards,
   };
 }
 
@@ -321,12 +327,14 @@ async function createConsumers(count, companies, addresses) {
       excluded = false;
       status = statusConsts.RESOURCE_STATUS.AVAILABLE;
     }
-    consumersData.push(createDummyUser({
-      password: "caramelo",
-      role: roleConstants.USER_ROLES.CONSUMER,
-      status,
-      excluded,
-    }));
+    consumersData.push(
+      createDummyUser({
+        password: "caramelo",
+        role: roleConstants.USER_ROLES.CONSUMER,
+        status,
+        excluded,
+      }),
+    );
   }
   const resolvedConsumersData = await Promise.all(consumersData);
   const createdConsumers = await userHandler.createMany({ data: resolvedConsumersData });
@@ -347,17 +355,19 @@ async function createCredits(consumers, companies) {
     const creditCount = faker.number.int({ min: 1, max: 15 });
     const selectedCards = faker.helpers.arrayElements(consumerData.cards, creditCount);
     for (const card of selectedCards) {
-      const company = companies.companies?.find(c => 
-        companies.cards?.some(companyCard => companyCard._id.equals(card._id) && companyCard.company_id.equals(c._id))
+      const company = companies.companies?.find((c) =>
+        companies.cards?.some(
+          (companyCard) => companyCard._id.equals(card._id) && companyCard.company_id.equals(c._id),
+        ),
       );
       if (!company) continue;
       const randomValue = Math.random();
       let status;
-      if (randomValue < 0.50) {
+      if (randomValue < 0.5) {
         status = statusConsts.CREDITS_STATUS.AVAILABLE;
-      } else if (randomValue < 0.80) {
+      } else if (randomValue < 0.8) {
         status = statusConsts.CREDITS_STATUS.USED;
-      } else if (randomValue < 0.90) {
+      } else if (randomValue < 0.9) {
         status = statusConsts.CREDITS_STATUS.REJECTED;
       } else {
         status = statusConsts.CREDITS_STATUS.PENDING;
@@ -367,15 +377,17 @@ async function createCredits(consumers, companies) {
         card.credit_expires_at.ref_number,
         card.credit_expires_at.ref_type,
       );
-      creditsData.push(createDummyCredit({
-        user_id: consumerData.consumer._id,
-        card_id: card._id,
-        company_id: company._id,
-        status,
-        excluded: false,
-        requested_at: status === statusConsts.CREDITS_STATUS.PENDING ? new Date() : null,
-        expires_at: expiresAt,
-      }));
+      creditsData.push(
+        createDummyCredit({
+          user_id: consumerData.consumer._id,
+          card_id: card._id,
+          company_id: company._id,
+          status,
+          excluded: false,
+          requested_at: status === statusConsts.CREDITS_STATUS.PENDING ? new Date() : null,
+          expires_at: expiresAt,
+        }),
+      );
     }
   }
   const createdCredits = await creditHandler.createMany({ data: creditsData });
@@ -384,4 +396,4 @@ async function createCredits(consumers, companies) {
 
 module.exports = {
   generateLoadTestData,
-}; 
+};

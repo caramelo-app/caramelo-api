@@ -61,8 +61,6 @@ function requireAuth(req, res, next) {
   });
 }
 
-
-
 function requireAdmin(req, res, next) {
   if (!req.user) {
     return next(

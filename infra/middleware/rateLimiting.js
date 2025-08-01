@@ -12,8 +12,6 @@ const logRateLimit = (req, rateLimitType) => {
 // Function to skip rate limiting during tests
 const skipDuringTests = () => process.env.NODE_ENV === "test";
 
-
-
 // Rate limiting for authentication (more restrictive)
 const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -107,8 +105,6 @@ const creditOperationsRateLimit = rateLimit({
     });
   },
 });
-
-
 
 // Slow down for authentication operations
 const authSlowDown = slowDown({
