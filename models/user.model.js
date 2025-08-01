@@ -100,8 +100,9 @@ userSchema.index({ company_id: 1, status: 1, excluded: 1 });
 userSchema.index({ role: 1, status: 1 });
 userSchema.index({ validation_token: 1 });
 userSchema.index({ validation_token_expires_at: 1 });
-userSchema.index({ phone: 1, status: 1, excluded: 1 });
 userSchema.index({ company_id: 1, role: 1, status: 1 });
 userSchema.index({ validation_token: 1, validation_token_expires_at: 1 });
+userSchema.index({ status: 1, excluded: 1, name: 1 });
+userSchema.index({ status: 1, excluded: 1, phone: 1 });
 
 module.exports = mongoose.model("User", userSchema);

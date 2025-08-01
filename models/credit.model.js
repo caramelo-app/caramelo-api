@@ -47,8 +47,9 @@ const creditSchema = new mongoose.Schema(
 
 creditSchema.index({ user_id: 1, status: 1, excluded: 1 });
 creditSchema.index({ card_id: 1 });
-creditSchema.index({ company_id: 1, status: 1, excluded: 1 });
 creditSchema.index({ expires_at: 1 });
 creditSchema.index({ user_id: 1, card_id: 1 });
+creditSchema.index({ company_id: 1, excluded: 1, created_at: -1 });
+creditSchema.index({ company_id: 1, excluded: 1, status: 1 });
 
 module.exports = mongoose.model("Credit", creditSchema);

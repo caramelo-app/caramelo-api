@@ -465,6 +465,30 @@ async function updateCompanyProfile(req, res, next) {
  *     tags: [Companies]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of results to return
+ *         example: 10
+ *       - in: query
+ *         name: skip
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *           default: 0
+ *         description: Number of results to skip
+ *         example: 0
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for name or phone
+ *         example: "João"
  *     responses:
  *       200:
  *         description: Company consumers retrieved successfully
@@ -484,12 +508,15 @@ async function updateCompanyProfile(req, res, next) {
  *                   created_at:
  *                     type: string
  *                     format: date-time
- *                   total_credits:
- *                     type: number
- *                   used_credits:
- *                     type: number
- *                   available_credits:
- *                     type: number
+ *                   lastCreditDate:
+ *                     type: string
+ *                     format: date-time
+ *       400:
+ *         description: Invalid parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       401:
  *         description: Unauthorized
  *         content:
@@ -506,6 +533,7 @@ async function updateCompanyProfile(req, res, next) {
 async function getConsumers(req, res, next) {
   try {
     const { company_id } = req.user;
+    let { limit, skip, search } = req.query;
 
     if (!company_id) {
       throw new ForbiddenError();
@@ -515,9 +543,34 @@ async function getConsumers(req, res, next) {
       company_id,
     });
 
+    if (limit) {
+      limit = parseInt(limit);
+      if (isNaN(limit) || limit < 1 || limit > 100) {
+        throw new ValidationError({
+          message: localize("error.generic.invalid", { field: "limit" }),
+        });
+      }
+    } else {
+      limit = parseInt(process.env.PAGINATION_DEFAULT_LIMIT) || 10;
+    }
+
+    if (skip) {
+      skip = parseInt(skip);
+      if (isNaN(skip) || skip < 0) {
+        throw new ValidationError({
+          message: localize("error.generic.invalid", { field: "skip" }),
+        });
+      }
+    } else {
+      skip = 0;
+    }
+
     const consumers = await creditHandler.aggregate({
       pipeline: getClientConsumersAggregation({
         company_id,
+        limit,
+        skip,
+        search: search?.trim(),
       }),
     });
 

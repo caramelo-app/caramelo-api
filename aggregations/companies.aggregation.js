@@ -20,12 +20,6 @@ function getClientConsumersAggregation(options) {
     },
   ];
 
-  if (options.limit) {
-    aggregation.push({
-      $limit: options.limit,
-    });
-  }
-
   aggregation.push(
     {
       $lookup: {
@@ -58,8 +52,32 @@ function getClientConsumersAggregation(options) {
         phone: "$user.phone",
         created_at: "$user.created_at",
       },
-    },
+    }
   );
+
+  if (options.search && options.search.trim().length > 0) {
+    const searchTerm = options.search.trim();
+    aggregation.push({
+      $match: {
+        $or: [
+          { name: { $regex: searchTerm, $options: "i" } },
+          { phone: { $regex: searchTerm, $options: "i" } },
+        ],
+      },
+    });
+  }
+
+  if (options.skip) {
+    aggregation.push({
+      $skip: options.skip,
+    });
+  }
+
+  if (options.limit) {
+    aggregation.push({
+      $limit: options.limit,
+    });
+  }
 
   return aggregation;
 }
