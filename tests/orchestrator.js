@@ -60,7 +60,7 @@ async function createDocumentOnMongo(quantity = 1, handler, options = [{}]) {
   switch (handler.getModelName()) {
     case "User": {
       for (let i = 0; i < quantity; i++) {
-        documents.push(createDummyUser(options[i]));
+        documents.push(await createDummyUser(options[i]));
       }
       break;
     }
