@@ -117,7 +117,7 @@
         "action": "Aguarde 1 hora antes de tentar resetar a senha novamente"
       },
       "creditOperations": {
-        "message": "Muitas operações de crédito em pouco tempo",
+        "message": "Muitas operações de selos em pouco tempo",
         "action": "Aguarde alguns minutos antes de realizar mais operações"
       },
       "authenticatedUser": {
@@ -141,7 +141,7 @@
   "resources": {
     "user": "Usuário",
     "company": "Empresa",
-    "credit": "Crédito",
+    "credit": "Selos",
     "card": "Cartão",
     "consumer": "Cliente"
   },
@@ -166,7 +166,7 @@
   "users": {
     "cards": {
       "request": {
-        "success": "Crédito solicitado com sucesso"
+        "success": "Selo solicitado com sucesso"
       }
     },
     "profile": {
@@ -192,7 +192,7 @@
         "success": "Cliente criado com sucesso"
       },
       "updateCredits": {
-        "success": "Créditos atualizados com sucesso",
+        "success": "Selos atualizados com sucesso",
         "error": {
           "action": "Verifique se o recurso existe e tente novamente"
         }
@@ -204,12 +204,12 @@
         "success": "Cliente deletado com sucesso"
       },
       "deleteCredit": {
-        "success": "Crédito removido com sucesso"
+        "success": "Selo removido com sucesso"
       },
       "redeem": {
         "success": "Benefício resgatado com sucesso",
-        "insufficientCredits": "Créditos insuficientes. Necessário: {{needed}}, Disponível: {{available}}",
-        "updateError": "Erro ao atualizar créditos. Tente novamente"
+        "insufficientCredits": "Selos insuficientes. Necessário: {{needed}}, Disponível: {{available}}",
+        "updateError": "Erro ao atualizar selos. Tente novamente"
       }
     },
     "cards": {
@@ -219,7 +219,7 @@
     },
     "credits": {
       "update": {
-        "success": "Crédito atualizado com sucesso"
+        "success": "Selo atualizado com sucesso"
       }
     },
     "users": {

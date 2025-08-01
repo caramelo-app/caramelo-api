@@ -144,7 +144,7 @@ async function generateLoadTestData(req, res, next) {
     const createdConsumers = await createConsumers(consumers, createdCompanies, addresses);
 
     // Step 5: Create credits for consumers
-    progressBar.update(5, { stage: "Criando créditos..." });
+    progressBar.update(5, { stage: "Criando selos..." });
     const createdCredits = await createCredits(createdConsumers, createdCompanies);
 
     progressBar.stop();
