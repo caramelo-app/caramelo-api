@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
-const statusConsts = require("constants/status.constants");
+const statusConsts = require("../../constants/status.constants");
 
 const { fakerPT_BR: faker } = require("@faker-js/faker");
-const { generateCNPJ } = require("utils/data.utils");
+const { generateCNPJ } = require("../../utils/data.utils");
 
 function createDummyCompany(options) {
   return {

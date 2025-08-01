@@ -1,10 +1,11 @@
-const roleConstants = require("constants/roles.constants");
-const statusConsts = require("constants/status.constants");
+const roleConstants = require("../../constants/roles.constants");
+const statusConsts = require("../../constants/status.constants");
 
 const { fakerPT_BR: faker } = require("@faker-js/faker");
-const { generatePhoneNumber } = require("utils/data.utils");
+const { generatePhoneNumber } = require("../../utils/data.utils");
+const { hash } = require("../../utils/password.utils");
 
-function createDummyUser(options) {
+async function createDummyUser(options) {
   const user = {
     name: (() => {
       if (!options?.name) {
@@ -13,7 +14,7 @@ function createDummyUser(options) {
       return options.name;
     })(),
     role: options?.role || roleConstants.USER_ROLES.CONSUMER,
-    password: faker.internet.password(),
+    password: await hash(options?.password || faker.internet.password()),
     phone: (() => {
       if (!options?.phone) {
         return generatePhoneNumber();

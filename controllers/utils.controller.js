@@ -483,14 +483,14 @@ async function getRandomAddresses(req, res, next) {
             );
 
             if (response.status !== 200) {
-              console.warn(`Failed to fetch places for keyword "${keyword}" in area ${area.lat},${area.lng}`);
+              console.error(`Failed to fetch places for keyword "${keyword}" in area ${area.lat},${area.lng}`);
               continue;
             }
 
             const data = await response.json();
 
             if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
-              console.warn(`Google Places API error for keyword "${keyword}": ${data.status}`);
+              console.error(`Google Places API error for keyword "${keyword}": ${data.status}`);
               continue;
             }
 
@@ -515,7 +515,7 @@ async function getRandomAddresses(req, res, next) {
 
                 const detailData = await detailResponse.json();
                 if (detailData.status !== "OK") {
-                  console.warn(`Error getting details for ${place.name}: ${detailData.status}`);
+                  console.error(`Error getting details for ${place.name}: ${detailData.status}`);
                   continue;
                 }
 
@@ -525,7 +525,7 @@ async function getRandomAddresses(req, res, next) {
                 const placeName = detailData.result.name;
 
                 if (!formattedAddress || !geometry || !geometry.location || !placeName) {
-                  console.warn(`Missing required data for ${place.name}`);
+                  console.error(`Missing required data for ${place.name}`);
                   continue;
                 }
 
@@ -549,7 +549,7 @@ async function getRandomAddresses(req, res, next) {
                     break;
                   }
                 } else {
-                  console.warn(`Failed to parse address for ${place.name}`);
+                  console.error(`Failed to parse address for ${place.name}`);
                 }
 
                 // Add small delay to avoid rate limiting
@@ -557,7 +557,7 @@ async function getRandomAddresses(req, res, next) {
               }
             }
           } catch (error) {
-            console.warn(`Error fetching places for keyword "${keyword}":`, error.message);
+            console.error(`Error fetching places for keyword "${keyword}":`, error.message);
             continue;
           }
         }
@@ -641,7 +641,7 @@ function parseAddressComponents(components, formattedAddress, city, state) {
       zipcode: zipcode.replace("-", ""),
     };
   } catch (error) {
-    console.warn("Error parsing address components:", error);
+    console.error("Error parsing address components:", error);
     return null;
   }
 }

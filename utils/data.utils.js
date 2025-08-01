@@ -15,7 +15,7 @@ function generatePhoneNumber() {
 function generateCNPJ() {
   return faker.string.numeric({
     length: 14,
-    allowLeadingZeros: false,
+    allowLeadingZeros: true,
   });
 }
 

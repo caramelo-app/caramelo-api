@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const statusConsts = require("constants/status.constants");
-const datesConstants = require("constants/dates.constants");
+const statusConsts = require("../../constants/status.constants");
+const datesConstants = require("../../constants/dates.constants");
 
 const { fakerPT_BR: faker } = require("@faker-js/faker");
 

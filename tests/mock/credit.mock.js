@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const statusConsts = require("constants/status.constants");
+const statusConsts = require("../../constants/status.constants");
 
 function createDummyCredit(options) {
   return {
