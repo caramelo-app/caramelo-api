@@ -1,49 +1,6 @@
-const { validateEmail, validateDocument, validatePhone } = require("utils/validation.utils");
+const { validateDocument, validatePhone } = require("utils/validation.utils");
 
 describe("Validation Utils", () => {
-  describe("validateEmail", () => {
-    test("Should return true if the email is valid", () => {
-      const email = "test@test.com";
-      const result = validateEmail(email);
-      expect(result).toBe(true);
-    });
-
-    test("Should return false if the email is invalid", () => {
-      const email = "test";
-      const result = validateEmail(email);
-      expect(result).toBe(false);
-    });
-
-    test("Should return false if the email is empty", () => {
-      const email = "";
-      const result = validateEmail(email);
-      expect(result).toBe(false);
-    });
-
-    test("Should return false if the email is null", () => {
-      const email = null;
-      const result = validateEmail(email);
-      expect(result).toBe(false);
-    });
-
-    test("Should return false if the email is undefined", () => {
-      const email = undefined;
-      const result = validateEmail(email);
-      expect(result).toBe(false);
-    });
-
-    test("Should return false if the email is not a string", () => {
-      const email = 123;
-      const result = validateEmail(email);
-      expect(result).toBe(false);
-    });
-
-    test("Should return false if the email is not a valid email", () => {
-      const email = "test@test";
-      const result = validateEmail(email);
-      expect(result).toBe(false);
-    });
-  });
 
   describe("validateDocument", () => {
     test("Should return true if the document is valid CPF", () => {

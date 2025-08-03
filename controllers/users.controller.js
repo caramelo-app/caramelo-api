@@ -49,20 +49,6 @@ function validatePhone(phone) {
   return true;
 }
 
-function validateEmail(email) {
-  if (email) {
-    const emailRegex =
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i;
-    if (!emailRegex.test(email)) {
-      throw new ValidationError({
-        message: localize("error.generic.invalidFormat", { field: "email" }),
-      });
-    }
-  }
-
-  return true;
-}
-
 function validateName(name) {
   if (name && name.length < 1) {
     throw new ValidationError({
@@ -440,8 +426,6 @@ async function requestCard(req, res, next) {
  *                   type: string
  *                 name:
  *                   type: string
- *                 email:
- *                   type: string
  *                 phone:
  *                   type: string
  *       401:
@@ -461,7 +445,6 @@ async function getProfile(req, res, next) {
       },
       projection: {
         name: 1,
-        email: 1,
         phone: 1,
       },
     };
@@ -494,10 +477,6 @@ async function getProfile(req, res, next) {
  *                 type: string
  *                 description: User name
  *                 example: "João Silva"
- *               email:
- *                 type: string
- *                 description: User email
- *                 example: "joao@example.com"
  *               phone:
  *                 type: string
  *                 description: User phone number
@@ -532,15 +511,14 @@ async function getProfile(req, res, next) {
  */
 async function updateProfile(req, res, next) {
   try {
-    const { name, email, phone, password } = req.body;
+    const { name, phone, password } = req.body;
 
-    if (!name && !email && !phone && !password) {
+    if (!name && !phone && !password) {
       throw new ValidationError();
     }
 
     // Validate input fields if provided
     if (name) validateName(name);
-    if (email) validateEmail(email);
     if (phone) validatePhone(phone);
     if (password) validatePassword(password);
 
@@ -560,7 +538,7 @@ async function updateProfile(req, res, next) {
       });
     }
 
-    const allowedFields = ["name", "email", "phone", "password"];
+    const allowedFields = ["name", "phone", "password"];
 
     const data = allowedFields.reduce((acc, field) => {
       if (req.body[field] !== undefined) {
@@ -655,6 +633,7 @@ async function cancelAccount(req, res, next) {
       },
       data: {
         excluded: true,
+        status: statusConsts.RESOURCE_STATUS.UNAVAILABLE,
       },
     });
 

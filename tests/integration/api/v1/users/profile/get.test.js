@@ -120,7 +120,6 @@ describe("GET /api/v1/users/profile", () => {
 
         expect(response.status).toBe(200);
         expect(body.name).toBe(user.documentsCreatedOnMongo[0].name);
-        expect(body.email).toBe(user.documentsCreatedOnMongo[0].email);
         expect(body.phone).toBe(user.documentsCreatedOnMongo[0].phone);
         expect(body.role).toBeUndefined();
         expect(body.status).toBeUndefined();

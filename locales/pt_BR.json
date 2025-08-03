@@ -18,9 +18,6 @@
       },
       "model": {
         "user": {
-          "email": {
-            "invalid": "O email {{email}} é inválido"
-          },
           "phone": {
             "invalid": "O telefone {{phone}} é inválido"
           }
@@ -144,6 +141,9 @@
     "credit": "Selos",
     "card": "Cartão",
     "consumer": "Cliente"
+  },
+  "fieldNames": {
+    "phone": "Telefone"
   },
   "auth": {
     "forgotPassword": {

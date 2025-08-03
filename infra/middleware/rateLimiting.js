@@ -20,8 +20,8 @@ const authRateLimit = rateLimit({
   legacyHeaders: false,
   skip: skipDuringTests, // Skip during tests
   keyGenerator: (req) => {
-    // Combine IP + phone/email for rate limiting by user
-    const identifier = req.body?.phone || req.body?.email || "unknown";
+    // Combine IP + phone for rate limiting by user
+    const identifier = req.body?.phone || "unknown";
     return `${req.ip}:${identifier}`;
   },
   message: {
@@ -114,7 +114,7 @@ const authSlowDown = slowDown({
   maxDelayMs: 10000, // Maximum 10 seconds of delay
   skip: skipDuringTests, // Skip during tests
   keyGenerator: (req) => {
-    const identifier = req.body?.phone || req.body?.email || "unknown";
+    const identifier = req.body?.phone || "unknown";
     return `${req.ip}:${identifier}`;
   },
 });
