@@ -77,7 +77,7 @@ describe("POST /api/v1/auth/reset-password", () => {
       await expect(resetPasswordResponse.status).toBe(200);
       await expect(resetPasswordBody.message).toBe(localize("auth.resetPassword.success"));
       await expect(correctPasswordMatch).toBe(true);
-    }, 100000);
+    });
 
     test("Should return 400 status when the token is missing", async () => {
       const validateResetTokenResponse = await fetch(endpoint, {

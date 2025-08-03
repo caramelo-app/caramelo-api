@@ -18,6 +18,6 @@ describe("GET Health Endpoint", () => {
       expect(body).toHaveProperty("timestamp");
       expect(body).toHaveProperty("uptime");
       expect(body).toHaveProperty("mongo");
-    }, 10000);
+    });
   });
 });

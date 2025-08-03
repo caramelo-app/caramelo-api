@@ -9,5 +9,6 @@
   },
   "globals": {
     "jest": true
-  }
+  },
+  "testTimeout": 30000
 }
