@@ -12,6 +12,45 @@ const logRateLimit = (req, rateLimitType) => {
 // Function to skip rate limiting during tests
 const skipDuringTests = () => process.env.NODE_ENV === "test";
 
+// Global rate limiting for all requests
+const globalRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === "production" ? 100 : 200, // 100 requests per 15 min in production
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: skipDuringTests, // Skip during tests
+  keyGenerator: (req) => {
+    return req.ip;
+  },
+  message: {
+    name: "TooManyRequestsError",
+    message: localize("error.rateLimiting.global.message"),
+    action: localize("error.rateLimiting.global.action"),
+    status_code: 429,
+  },
+  handler: (req, res) => {
+    logRateLimit(req, "global");
+    res.status(429).json({
+      name: "TooManyRequestsError",
+      message: localize("error.rateLimiting.global.message"),
+      action: localize("error.rateLimiting.global.action"),
+      status_code: 429,
+    });
+  },
+});
+
+// Global slow down for all requests
+const globalSlowDown = slowDown({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  delayAfter: 50, // After 50 requests
+  delayMs: (hits) => (hits - 50) * 100, // 100ms, 200ms, 300ms...
+  maxDelayMs: 5000, // Maximum 5 seconds of delay
+  skip: skipDuringTests, // Skip during tests
+  keyGenerator: (req) => {
+    return req.ip;
+  },
+});
+
 // Rate limiting for authentication (more restrictive)
 const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -150,4 +189,6 @@ module.exports = {
   creditOperationsRateLimit,
   authSlowDown,
   authenticatedUserRateLimit,
+  globalRateLimit,
+  globalSlowDown,
 };
