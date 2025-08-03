@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema(
         return this.role === roleConstants.USER_ROLES.CONSUMER;
       },
       type: String,
-      unique: true,
       validate: {
         validator: function (v) {
           return validatePhone(v);
@@ -104,5 +103,17 @@ userSchema.index({ company_id: 1, role: 1, status: 1 });
 userSchema.index({ validation_token: 1, validation_token_expires_at: 1 });
 userSchema.index({ status: 1, excluded: 1, name: 1 });
 userSchema.index({ status: 1, excluded: 1, phone: 1 });
+
+// Create a partial unique index for phone that only applies to non-excluded users
+userSchema.index(
+  { phone: 1 }, 
+  { 
+    unique: true, 
+    partialFilterExpression: { 
+      excluded: { $ne: true },
+      status: { $ne: statusConsts.RESOURCE_STATUS.UNAVAILABLE },
+    },
+  },
+);
 
 module.exports = mongoose.model("User", userSchema);
