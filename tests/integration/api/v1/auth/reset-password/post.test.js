@@ -4,6 +4,7 @@ const passwordUtils = require("utils/password.utils");
 const orchestrator = require("tests/orchestrator.js");
 const statusConsts = require("constants/status.constants");
 const datesConstants = require("constants/dates.constants");
+const { generatePhoneNumber } = require("utils/data.utils");
 
 const { localize } = require("utils/localization.utils");
 const { subTime, addTime } = require("utils/date.utils");
@@ -182,7 +183,7 @@ describe("POST /api/v1/auth/reset-password", () => {
         },
         body: JSON.stringify({
           token: "12345",
-          phone: "5599999999999",
+          phone: generatePhoneNumber(),
           password: "newPassword",
         }),
       });

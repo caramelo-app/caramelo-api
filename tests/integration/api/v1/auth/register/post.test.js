@@ -156,5 +156,51 @@ describe("POST /api/v1/auth/register", () => {
       );
       expect(responseBody.name).toBe("ValidationError");
     });
+
+    test("Should return 400 if phone is already in use by non-excluded user", async () => {
+      // Create first user
+      const firstUserData = {
+        name: "First User",
+        phone: "5511999999999",
+        password: "password123",
+        role: "consumer",
+      };
+
+      const firstResponse = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(firstUserData),
+      });
+
+      const firstResponseBody = await firstResponse.json();
+      expect(firstResponse.status).toBe(200);
+      expect(firstResponseBody.message).toBe(localize("auth.register.success"));
+
+      // Try to create second user with same phone
+      const secondUserData = {
+        name: "Second User",
+        phone: "5511999999999",
+        password: "password123",
+        role: "consumer",
+      };
+
+      const secondResponse = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(secondUserData),
+      });
+
+      const secondResponseBody = await secondResponse.json();
+
+      expect(secondResponse.status).toBe(400);
+      expect(secondResponseBody.message).toBe(
+        localize("error.generic.alreadyInUse", { field: "phone", value: firstUserData.phone }),
+      );
+      expect(secondResponseBody.name).toBe("ValidationError");
+    });
   });
 });

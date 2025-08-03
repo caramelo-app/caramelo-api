@@ -7,6 +7,7 @@ const { localize } = require("utils/localization.utils");
 const { connectDatabase, disconnectDatabase } = require("infra/database");
 const { validateToken } = require("utils/token.utils");
 const { addTime } = require("utils/date.utils");
+const { generatePhoneNumber } = require("utils/data.utils");
 
 const userHandler = dbHandler(userModel);
 
@@ -63,7 +64,7 @@ describe("POST /api/v1/auth/forgot-password", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone: "5599999999999",
+          phone: generatePhoneNumber(),
         }),
       });
 

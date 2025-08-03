@@ -295,13 +295,17 @@ async function register(req, res, next) {
       });
     }
 
-    const user = await userHandler.read({
-      filter: { phone, excluded: false, status: statusConsts.RESOURCE_STATUS.AVAILABLE },
-      projection: { _id: 1 },
+    const existingUser = await userHandler.read({
+      filter: { phone },
+      projection: { _id: 1, status: 1, excluded: 1 },
     });
 
-    if (user) {
-      throw new ValidationError({ message: localize("error.generic.alreadyInUse", { field: "phone", value: phone }) });
+    if (existingUser) {
+      if (!existingUser.excluded) {
+        throw new ValidationError({ 
+          message: localize("error.generic.alreadyInUse", { field: "phone", value: phone }) 
+        });
+      }
     }
 
     // create validation token

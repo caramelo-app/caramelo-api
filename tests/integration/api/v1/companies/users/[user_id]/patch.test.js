@@ -7,6 +7,7 @@ const roleConstants = require("constants/roles.constants");
 
 const { localize } = require("utils/localization.utils");
 const { connectDatabase, disconnectDatabase } = require("infra/database");
+const { generatePhoneNumber } = require("utils/data.utils");
 
 // Handlers
 const userHandler = dbHandler(userModel);
@@ -116,12 +117,14 @@ describe("PATCH /api/v1/companies/users/:user_id", () => {
           },
           body: JSON.stringify({
             name: "John Doe",
-            phone: "1234567890",
+            phone: generatePhoneNumber(),
             password: "1234567890",
           }),
         });
 
         const body = await response.json();
+
+        console.log(body);
 
         expect(response.status).toBe(200);
         expect(body.message).toBe(localize("companies.users.update.success"));
@@ -164,7 +167,7 @@ describe("PATCH /api/v1/companies/users/:user_id", () => {
           },
           body: JSON.stringify({
             name: "John Doe",
-            phone: "1234567890",
+            phone: generatePhoneNumber(),
             password: "1234567890",
           }),
         });
@@ -213,7 +216,7 @@ describe("PATCH /api/v1/companies/users/:user_id", () => {
           },
           body: JSON.stringify({
             name: "John Doe",
-            phone: "1234567890",
+            phone: generatePhoneNumber(),
             password: "1234567890",
           }),
         });
@@ -262,7 +265,7 @@ describe("PATCH /api/v1/companies/users/:user_id", () => {
           },
           body: JSON.stringify({
             name: "John Doe",
-            phone: "1234567890",
+            phone: generatePhoneNumber(),
             password: "1234567890",
           }),
         });
@@ -312,7 +315,7 @@ describe("PATCH /api/v1/companies/users/:user_id", () => {
           },
           body: JSON.stringify({
             name: "John Doe",
-            phone: "1234567890",
+            phone: generatePhoneNumber(),
             password: "1234567890",
           }),
         });

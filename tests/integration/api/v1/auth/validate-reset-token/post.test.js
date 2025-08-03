@@ -4,6 +4,7 @@ const orchestrator = require("tests/orchestrator.js");
 const statusConsts = require("constants/status.constants");
 const datesConstants = require("constants/dates.constants");
 
+const { generatePhoneNumber } = require("utils/data.utils");
 const { subTime } = require("utils/date.utils");
 const { localize } = require("utils/localization.utils");
 const { connectDatabase, disconnectDatabase } = require("infra/database");
@@ -166,7 +167,7 @@ describe("POST /api/v1/auth/validate-reset-token", () => {
         },
         body: JSON.stringify({
           token: "12345",
-          phone: "5599999999999",
+          phone: generatePhoneNumber(),
         }),
       });
 

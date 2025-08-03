@@ -9,6 +9,7 @@ const roleConstants = require("constants/roles.constants");
 
 const { localize } = require("utils/localization.utils");
 const { connectDatabase, disconnectDatabase } = require("infra/database");
+const { generatePhoneNumber } = require("utils/data.utils");
 
 // Handlers
 const userHandler = dbHandler(userModel);
@@ -169,7 +170,7 @@ describe("POST /api/v1/auth/login", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone: "5599999999999",
+          phone: generatePhoneNumber(),
           password: "password",
         }),
       });
@@ -230,7 +231,7 @@ describe("POST /api/v1/auth/login", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone: "5599999999999",
+          phone: generatePhoneNumber(),
         }),
       });
 

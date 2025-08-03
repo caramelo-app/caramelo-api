@@ -122,6 +122,7 @@ describe("PATCH /api/v1/companies/profile", () => {
             name: "John Doe",
             phone: generatePhoneNumber(),
             address: {
+              zipcode: faker.location.zipCode(),
               street: faker.location.streetAddress(),
               number: faker.location.buildingNumber(),
               complement: faker.location.secondaryAddress(),
