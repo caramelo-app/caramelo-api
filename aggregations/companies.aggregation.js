@@ -52,17 +52,14 @@ function getClientConsumersAggregation(options) {
         phone: "$user.phone",
         created_at: "$user.created_at",
       },
-    }
+    },
   );
 
   if (options.search && options.search.trim().length > 0) {
     const searchTerm = options.search.trim();
     aggregation.push({
       $match: {
-        $or: [
-          { name: { $regex: searchTerm, $options: "i" } },
-          { phone: { $regex: searchTerm, $options: "i" } },
-        ],
+        $or: [{ name: { $regex: searchTerm, $options: "i" } }, { phone: { $regex: searchTerm, $options: "i" } }],
       },
     });
   }

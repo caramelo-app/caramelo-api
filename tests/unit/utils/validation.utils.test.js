@@ -1,7 +1,6 @@
 const { validateDocument, validatePhone } = require("utils/validation.utils");
 
 describe("Validation Utils", () => {
-
   describe("validateDocument", () => {
     test("Should return true if the document is valid CPF", () => {
       const document = "04992271901";

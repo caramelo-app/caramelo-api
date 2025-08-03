@@ -106,10 +106,10 @@ userSchema.index({ status: 1, excluded: 1, phone: 1 });
 
 // Create a partial unique index for phone that only applies to non-excluded users
 userSchema.index(
-  { phone: 1 }, 
-  { 
-    unique: true, 
-    partialFilterExpression: { 
+  { phone: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
       excluded: { $ne: true },
       status: { $ne: statusConsts.RESOURCE_STATUS.UNAVAILABLE },
     },
