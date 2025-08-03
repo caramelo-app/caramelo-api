@@ -296,7 +296,7 @@ async function register(req, res, next) {
     }
 
     const user = await userHandler.read({
-      filter: { phone },
+      filter: { phone, excluded: false, status: statusConsts.RESOURCE_STATUS.AVAILABLE },
       projection: { _id: 1 },
     });
 

@@ -15,13 +15,13 @@ module.exports = function (model) {
       const result = await model.find(filter, projection).sort(sort).limit(limit).skip(skip).lean();
       return result;
     } catch (error) {
-      return handleError(error, localize("error.dbHandler.list.message"));
+      throw handleError(error, localize("error.dbHandler.list.message"));
     }
   };
 
   methods.read = async (options) => {
     if (!options?.filter) {
-      return new ServiceError({
+      throw new ServiceError({
         message: localize("error.generic.notFound", {
           resource: "options.filter",
         }),
@@ -35,7 +35,7 @@ module.exports = function (model) {
       const result = await model.findOne(filter, projection).lean();
       return result;
     } catch (error) {
-      return handleError(error, localize("error.dbHandler.read.message"));
+      throw handleError(error, localize("error.dbHandler.read.message"));
     }
   };
 
@@ -46,13 +46,13 @@ module.exports = function (model) {
       const result = await data.save();
       return result;
     } catch (error) {
-      return handleError(error, localize("error.dbHandler.create.message"));
+      throw handleError(error, localize("error.dbHandler.create.message"));
     }
   };
 
   methods.update = async (options) => {
     if (!options?.filter) {
-      return new ServiceError({
+      throw new ServiceError({
         message: localize("error.generic.notFound", {
           resource: "options.filter",
         }),
@@ -71,13 +71,13 @@ module.exports = function (model) {
         .lean();
       return result;
     } catch (error) {
-      return handleError(error, localize("error.dbHandler.update.message"));
+      throw handleError(error, localize("error.dbHandler.update.message"));
     }
   };
 
   methods.remove = async (options) => {
     if (!options?.filter) {
-      return new ServiceError({
+      throw new ServiceError({
         message: localize("error.generic.notFound", {
           resource: "options.filter",
         }),
@@ -90,7 +90,7 @@ module.exports = function (model) {
       const result = await model.deleteMany(filter);
       return result;
     } catch (error) {
-      return handleError(error, localize("error.dbHandler.remove.message"));
+      throw handleError(error, localize("error.dbHandler.remove.message"));
     }
   };
 
@@ -99,13 +99,13 @@ module.exports = function (model) {
       const result = await model.aggregate(options.pipeline);
       return result;
     } catch (error) {
-      return handleError(error, localize("error.dbHandler.aggregate.message"));
+      throw handleError(error, localize("error.dbHandler.aggregate.message"));
     }
   };
 
   methods.createMany = async (options) => {
     if (!options?.data || !Array.isArray(options.data)) {
-      return new ServiceError({
+      throw new ServiceError({
         message: localize("error.generic.notFound", {
           resource: "options.data (array)",
         }),
@@ -119,13 +119,13 @@ module.exports = function (model) {
       });
       return result;
     } catch (error) {
-      return handleError(error, localize("error.dbHandler.createMany.message"));
+      throw handleError(error, localize("error.dbHandler.createMany.message"));
     }
   };
 
   methods.updateMany = async (options) => {
     if (!options?.filter) {
-      return new ServiceError({
+      throw new ServiceError({
         message: localize("error.generic.notFound", {
           resource: "options.filter",
         }),
@@ -133,7 +133,7 @@ module.exports = function (model) {
     }
 
     if (!options?.data) {
-      return new ServiceError({
+      throw new ServiceError({
         message: localize("error.generic.notFound", {
           resource: "options.data",
         }),
@@ -144,7 +144,7 @@ module.exports = function (model) {
       const result = await model.updateMany(options.filter, options.data, options.options);
       return result;
     } catch (error) {
-      return handleError(error, localize("error.dbHandler.updateMany.message"));
+      throw handleError(error, localize("error.dbHandler.updateMany.message"));
     }
   };
 
@@ -157,17 +157,17 @@ module.exports = function (model) {
       case "ValidationError":
         return new ValidationError({
           cause: error,
-          message,
+          message: error.message || message,
         });
       case "MongoServerError":
         return new InternalServerError({
           cause: error,
-          message,
+          message: error.message || message,
         });
       default:
         return new ServiceError({
           cause: error,
-          message,
+          message: error.message || message,
         });
     }
   }

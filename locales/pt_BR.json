@@ -142,9 +142,6 @@
     "card": "Cartão",
     "consumer": "Cliente"
   },
-  "fieldNames": {
-    "phone": "Telefone"
-  },
   "auth": {
     "forgotPassword": {
       "success": "Token enviado com sucesso"
