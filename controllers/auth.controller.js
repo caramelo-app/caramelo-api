@@ -302,8 +302,8 @@ async function register(req, res, next) {
 
     if (existingUser) {
       if (!existingUser.excluded) {
-        throw new ValidationError({ 
-          message: localize("error.generic.alreadyInUse", { field: "phone", value: phone }) 
+        throw new ValidationError({
+          message: localize("error.generic.alreadyInUse", { field: "phone", value: phone }),
         });
       }
     }

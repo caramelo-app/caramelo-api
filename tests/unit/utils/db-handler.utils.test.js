@@ -6,7 +6,6 @@ const dbHandler = require("utils/db-handler.utils");
 const passwordUtils = require("utils/password.utils");
 const orchestrator = require("tests/orchestrator.js");
 const roleConstants = require("constants/roles.constants");
-const statusConsts = require("constants/status.constants");
 
 const { localize } = require("utils/localization.utils");
 const { connectDatabase, disconnectDatabase } = require("infra/database");
@@ -132,7 +131,7 @@ describe("DB Handler Utils", () => {
     test("Should return ServiceError if the filter is not provided", async () => {
       await expect(userHandler.read()).rejects.toThrow(ServiceError);
       await expect(userHandler.read()).rejects.toMatchObject({
-        message: localize("error.generic.notFound", { resource: "options.filter" })
+        message: localize("error.generic.notFound", { resource: "options.filter" }),
       });
     });
   });
@@ -159,9 +158,11 @@ describe("DB Handler Utils", () => {
     });
 
     test("Should return ValidationError if the document is not valid", async () => {
-      await expect(userHandler.create({
-        data: { name: faker.person.fullName() },
-      })).rejects.toThrow(ValidationError);
+      await expect(
+        userHandler.create({
+          data: { name: faker.person.fullName() },
+        }),
+      ).rejects.toThrow(ValidationError);
     });
   });
 
@@ -192,12 +193,16 @@ describe("DB Handler Utils", () => {
     });
 
     test("Should return ServiceError if the filter is not provided", async () => {
-      await expect(userHandler.update({
-        data: { name: faker.person.fullName() },
-      })).rejects.toThrow(ServiceError);
-      await expect(userHandler.update({
-        data: { name: faker.person.fullName() },
-      })).rejects.toMatchObject({
+      await expect(
+        userHandler.update({
+          data: { name: faker.person.fullName() },
+        }),
+      ).rejects.toThrow(ServiceError);
+      await expect(
+        userHandler.update({
+          data: { name: faker.person.fullName() },
+        }),
+      ).rejects.toMatchObject({
         message: localize("error.generic.notFound", {
           resource: "options.filter",
         }),
@@ -254,14 +259,16 @@ describe("DB Handler Utils", () => {
     test("Should return ServiceError if the pipeline is not provided", async () => {
       await expect(userHandler.aggregate()).rejects.toThrow(ServiceError);
       await expect(userHandler.aggregate()).rejects.toMatchObject({
-        message: "Cannot read properties of undefined (reading 'pipeline')"
+        message: "Cannot read properties of undefined (reading 'pipeline')",
       });
     });
 
     test("Should return InternalServerError if the pipeline is invalid (MongoDB Error)", async () => {
-      await expect(userHandler.aggregate({
-        pipeline: [{ $invalidMethod: {} }],
-      })).rejects.toThrow(InternalServerError);
+      await expect(
+        userHandler.aggregate({
+          pipeline: [{ $invalidMethod: {} }],
+        }),
+      ).rejects.toThrow(InternalServerError);
     });
   });
 
@@ -371,12 +378,16 @@ describe("DB Handler Utils", () => {
     });
 
     test("Should return ServiceError if filter is not provided", async () => {
-      await expect(userHandler.updateMany({
-        data: { name: faker.person.fullName() },
-      })).rejects.toThrow(ServiceError);
-      await expect(userHandler.updateMany({
-        data: { name: faker.person.fullName() },
-      })).rejects.toMatchObject({
+      await expect(
+        userHandler.updateMany({
+          data: { name: faker.person.fullName() },
+        }),
+      ).rejects.toThrow(ServiceError);
+      await expect(
+        userHandler.updateMany({
+          data: { name: faker.person.fullName() },
+        }),
+      ).rejects.toMatchObject({
         message: localize("error.generic.notFound", {
           resource: "options.filter",
         }),
@@ -384,12 +395,16 @@ describe("DB Handler Utils", () => {
     });
 
     test("Should return ServiceError if data is not provided", async () => {
-      await expect(userHandler.updateMany({
-        filter: { name: faker.person.fullName() },
-      })).rejects.toThrow(ServiceError);
-      await expect(userHandler.updateMany({
-        filter: { name: faker.person.fullName() },
-      })).rejects.toMatchObject({
+      await expect(
+        userHandler.updateMany({
+          filter: { name: faker.person.fullName() },
+        }),
+      ).rejects.toThrow(ServiceError);
+      await expect(
+        userHandler.updateMany({
+          filter: { name: faker.person.fullName() },
+        }),
+      ).rejects.toMatchObject({
         message: localize("error.generic.notFound", {
           resource: "options.data",
         }),
