@@ -1,4 +1,5 @@
 const dateUtils = require("../utils/date.utils");
+const mongoose = require("mongoose");
 const userModel = require("../models/user.model");
 const cardModel = require("../models/card.model");
 const creditModel = require("../models/credit.model");
@@ -64,6 +65,18 @@ const companyHandler = dbHandler(companyModel);
  *           type: number
  *         description: Number of results to skip
  *         example: 0
+ *       - in: query
+ *         name: segments
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of segment IDs to filter by
+ *         example: "65f0c9e1b1a2f3c4d5e6a7b8,65f0c9e1b1a2f3c4d5e6a7b9"
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term to match company name or segment name (case-insensitive)
+ *         example: "barbearia"
  *     responses:
  *       200:
  *         description: Companies found successfully
@@ -108,7 +121,7 @@ const companyHandler = dbHandler(companyModel);
  */
 async function exploreCompanies(req, res, next) {
   try {
-    let { latitude, longitude, distance, limit, skip } = req.query;
+    let { latitude, longitude, distance, limit, skip, segments, search } = req.query;
 
     // Validate required parameters
     if (!latitude || !longitude) {
@@ -118,8 +131,8 @@ async function exploreCompanies(req, res, next) {
     }
 
     // Validate coordinate format
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
+    const lat = typeof latitude === "string" ? parseFloat(latitude) : Number(latitude);
+    const lng = typeof longitude === "string" ? parseFloat(longitude) : Number(longitude);
 
     if (isNaN(lat) || isNaN(lng)) {
       throw new ValidationError({
@@ -134,38 +147,74 @@ async function exploreCompanies(req, res, next) {
     }
 
     if (!distance) {
-      distance = process.env.EXPLORE_DEFAULT_DISTANCE;
+      distance = parseFloat(process.env.EXPLORE_DEFAULT_DISTANCE) || 5;
     } else {
+      distance = typeof distance === "string" ? parseFloat(distance) : Number(distance);
+      if (isNaN(distance) || distance <= 0) {
+        distance = parseFloat(process.env.EXPLORE_DEFAULT_DISTANCE) || 5;
+      }
       if (distance > 10) {
         distance = 10;
       }
     }
 
     if (!limit) {
-      limit = process.env.PAGINATION_DEFAULT_LIMIT;
+      limit = parseInt(process.env.PAGINATION_DEFAULT_LIMIT) || 20;
+    } else {
+      limit = typeof limit === "string" ? parseInt(limit) : Number(limit);
     }
 
     if (!skip) {
       skip = 0;
+    } else {
+      skip = typeof skip === "string" ? parseInt(skip) : Number(skip);
+    }
+
+    const filter = {
+      "address.location.coordinates": {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [lng, lat],
+          },
+          $maxDistance: distance * 1000,
+        },
+      },
+      status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+      excluded: false,
+    };
+
+    // Optional segments filter (accepts comma-separated string or repeated params)
+    if (segments) {
+      const segmentsArrayRaw = Array.isArray(segments)
+        ? segments
+        : String(segments)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+      const segmentsArray = segmentsArrayRaw.map((s) =>
+        mongoose.Types.ObjectId.isValid(s) ? new mongoose.Types.ObjectId(s) : s,
+      );
+      if (segmentsArray.length > 0) {
+        filter["segment._id"] = { $in: segmentsArray };
+      }
+    }
+
+    // Optional case-insensitive search by company name or segment name
+    const searchTerm = typeof search === "string" ? search.trim() : "";
+    if (searchTerm) {
+      filter.$or = [
+        { name: { $regex: searchTerm, $options: "i" } },
+        { "segment.name": { $regex: searchTerm, $options: "i" } },
+      ];
     }
 
     const companyListOptions = {
-      filter: {
-        "address.location.coordinates": {
-          $near: {
-            $geometry: {
-              type: "Point",
-              coordinates: [longitude, latitude],
-            },
-            $maxDistance: distance * 1000,
-          },
-        },
-        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
-        excluded: false,
-      },
+      filter,
       projection: {
         name: 1,
         "segment.name": 1,
+        "segment._id": 1,
         logo: 1,
         address: 1,
       },
