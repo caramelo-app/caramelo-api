@@ -124,8 +124,6 @@ describe("PATCH /api/v1/companies/users/:user_id", () => {
 
         const body = await response.json();
 
-        console.log(body);
-
         expect(response.status).toBe(200);
         expect(body.message).toBe(localize("companies.users.update.success"));
       });
