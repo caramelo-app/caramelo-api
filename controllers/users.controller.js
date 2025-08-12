@@ -26,6 +26,69 @@ function validateCompanyId(companyId) {
   return true;
 }
 
+/**
+ * @swagger
+ * /v1/users/companies/{company_id}:
+ *   get:
+ *     summary: Get public company details for consumer
+ *     description: Retrieve public details about a specific company
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: company_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Company ID
+ *     responses:
+ *       200:
+ *         description: Company details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       400:
+ *         description: Invalid company ID
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Company not found
+ */
+async function getCompanyById(req, res, next) {
+  try {
+    validateCompanyId(req.params.company_id);
+
+    const company = await companyHandler.read({
+      filter: {
+        _id: req.params.company_id,
+        excluded: false,
+        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+      },
+      projection: {
+        name: 1,
+        logo: 1,
+        address: 1,
+        segment: {
+          _id: 1,
+          name: 1,
+        },
+      },
+    });
+
+    if (!company) {
+      throw new ValidationError({
+        message: localize("error.generic.notFound", { resource: localize("resources.company") }),
+      });
+    }
+
+    return res.status(200).json(company);
+  } catch (error) {
+    next(error);
+  }
+}
+
 function validateCardId(cardId) {
   if (!cardId) {
     throw new ValidationError({
@@ -648,6 +711,7 @@ async function cancelAccount(req, res, next) {
 module.exports = {
   getCards,
   getCompaniesCards,
+  getCompanyById,
   requestCard,
   getProfile,
   updateProfile,
