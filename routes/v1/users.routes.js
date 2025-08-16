@@ -25,6 +25,7 @@ router.use(requireAuth);
 router.use(authenticatedUserRateLimit);
 router.get("/cards", requireConsumer, userController.getCards);
 router.get("/cards/companies/:company_id/list", requireConsumer, userController.getCompaniesCards);
+router.get("/cards/companies/:company_id/details", requireConsumer, userController.getCompanyCardsWithCredits);
 router.get("/companies/:company_id", requireConsumer, userController.getCompanyById);
 router.post("/cards/:card_id/request", requireConsumer, creditOperationsRateLimit, userController.requestCard);
 router.get("/profile", requireConsumer, userController.getProfile);

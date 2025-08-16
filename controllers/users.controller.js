@@ -217,6 +217,7 @@ async function getCards(req, res, next) {
         status: statusConsts.RESOURCE_STATUS.AVAILABLE,
       },
       projection: {
+        _id: 1,
         name: 1,
         "segment.name": 1,
         logo: 1,
@@ -235,6 +236,7 @@ async function getCards(req, res, next) {
 
       response.push({
         company: {
+          _id: company._id,
           name: company.name,
           segment: {
             name: company.segment.name,
@@ -347,6 +349,94 @@ async function getCompaniesCards(req, res, next) {
     }
 
     return res.status(200).json(cards);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @swagger
+ * /v1/users/cards/companies/{company_id}/details:
+ *   get:
+ *     summary: Get company cards with user's credits
+ *     description: Retrieve all cards from a specific company including the authenticated user's credits
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: company_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Company ID
+ *     responses:
+ *       200:
+ *         description: Company cards with user's credits retrieved successfully
+ *       400:
+ *         description: Invalid company ID
+ *       401:
+ *         description: Unauthorized
+ */
+async function getCompanyCardsWithCredits(req, res, next) {
+  try {
+    validateCompanyId(req.params.company_id);
+
+    const company = await companyHandler.read({
+      filter: {
+        _id: req.params.company_id,
+        excluded: false,
+        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+      },
+      projection: { _id: 1 },
+    });
+
+    if (!company) {
+      throw new ValidationError({
+        message: localize("error.generic.notAvailable", { resource: localize("resources.company") }),
+      });
+    }
+
+    const cards = await cardHandler.list({
+      filter: {
+        company_id: req.params.company_id,
+        excluded: false,
+        status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+      },
+      projection: {
+        title: 1,
+        credits_needed: 1,
+      },
+    });
+
+    const cardIds = cards.map((c) => c._id);
+
+    const credits = await creditHandler.list({
+      filter: {
+        user_id: req.user._id,
+        company_id: req.params.company_id,
+        card_id: { $in: cardIds },
+        excluded: false,
+        status: { $in: [statusConsts.CREDITS_STATUS.AVAILABLE, statusConsts.CREDITS_STATUS.USED] },
+      },
+      projection: {
+        _id: 1,
+        card_id: 1,
+        created_at: 1,
+        status: 1,
+      },
+    });
+
+    const response = cards.map((card) => ({
+      _id: card._id,
+      title: card.title,
+      credits_needed: card.credits_needed,
+      credits: credits
+        .filter((c) => c.card_id.toString() === card._id.toString())
+        .map((c) => ({ _id: c._id, created_at: c.created_at, status: c.status })),
+    }));
+
+    return res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -711,6 +801,7 @@ async function cancelAccount(req, res, next) {
 module.exports = {
   getCards,
   getCompaniesCards,
+  getCompanyCardsWithCredits,
   getCompanyById,
   requestCard,
   getProfile,
