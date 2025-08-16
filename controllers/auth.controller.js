@@ -190,6 +190,7 @@ async function login(req, res, next) {
       accessToken: token,
       expiresIn: parseInt(process.env.LOGIN_EXPIRES_IN),
       user: {
+        _id: user._id,
         name: user.name,
         role: user.role,
         phone: user.phone,
@@ -197,6 +198,8 @@ async function login(req, res, next) {
     };
 
     if (user.role === roleConstants.USER_ROLES.CLIENT && company) {
+      // Surface company_id to the client user payload
+      response.user.company_id = user.company_id;
       response.company = {
         name: company.name,
         phone: company.phone,
