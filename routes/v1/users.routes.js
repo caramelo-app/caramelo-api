@@ -31,5 +31,6 @@ router.post("/cards/:card_id/request", requireConsumer, creditOperationsRateLimi
 router.get("/profile", requireConsumer, userController.getProfile);
 router.patch("/profile", requireConsumer, userController.updateProfile);
 router.delete("/profile", requireConsumerOrClient, userController.cancelAccount);
+router.get("/dashboard", requireConsumer, userController.getConsumerDashboard);
 
 module.exports = router;

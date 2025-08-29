@@ -14,6 +14,8 @@ const userHandler = dbHandler(userModel);
 const cardHandler = dbHandler(cardModel);
 const creditHandler = dbHandler(creditModel);
 const companyHandler = dbHandler(companyModel);
+const segmentModel = require("../models/segment.model");
+const segmentHandler = dbHandler(segmentModel);
 
 // Validation functions
 function validateCompanyId(companyId) {
@@ -444,6 +446,106 @@ async function getCompanyCardsWithCredits(req, res, next) {
 
 /**
  * @swagger
+ * /v1/users/dashboard:
+ *   get:
+ *     summary: Get consumer dashboard data
+ *     description: Returns segments, near places by location, and cards close to completion for the authenticated user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: latitude
+ *         schema:
+ *           type: number
+ *         description: Current latitude of the user
+ *       - in: query
+ *         name: longitude
+ *         schema:
+ *           type: number
+ *         description: Current longitude of the user
+ *     responses:
+ *       200:
+ *         description: Dashboard data
+ */
+async function getConsumerDashboard(req, res, next) {
+  try {
+    const { latitude, longitude } = req.query;
+
+    // Segments (top segments)
+    const segments = await segmentHandler.list({
+      filter: { status: statusConsts.RESOURCE_STATUS.AVAILABLE, excluded: false },
+      projection: { _id: 1, name: 1, icon: 1, description: 1 },
+      sort: { name: 1 },
+      limit: 4,
+    });
+
+    // Cards with user's credits by company and completion ratio
+    const userCredits = await creditHandler.list({
+      filter: { user_id: req.user._id, excluded: false, status: { $in: [statusConsts.CREDITS_STATUS.AVAILABLE, statusConsts.CREDITS_STATUS.USED] } },
+      projection: { card_id: 1, company_id: 1 },
+    });
+
+    const companyIds = [...new Set(userCredits.map((c) => c.company_id.toString()))];
+    const cardIds = [...new Set(userCredits.map((c) => c.card_id.toString()))];
+
+    const cards = await cardHandler.list({
+      filter: { _id: { $in: cardIds }, excluded: false, status: statusConsts.RESOURCE_STATUS.AVAILABLE },
+      projection: { _id: 1, title: 1, credits_needed: 1, company_id: 1 },
+    });
+
+    const completion = cards.map((card) => {
+      const count = userCredits.filter((c) => c.card_id.toString() === card._id.toString()).length;
+      const needed = card.credits_needed || 0;
+      const ratio = needed > 0 ? count / needed : 0;
+      return {
+        _id: card._id,
+        title: card.title,
+        credits_needed: needed,
+        user_credits: count,
+        completion: Math.min(1, ratio),
+        company_id: card.company_id,
+      };
+    });
+
+    const almostThere = completion
+      .sort((a, b) => b.completion - a.completion)
+      .slice(0, 3)
+      .map((c) => ({ _id: c._id, title: c.title, credits_needed: c.credits_needed, user_credits: c.user_credits, completion: c.completion }));
+
+    // Nearby places (if location provided)
+    let nearPlaces = [];
+    if (latitude && longitude) {
+      const lat = parseFloat(latitude);
+      const lng = parseFloat(longitude);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const companies = await companyHandler.list({
+          filter: {
+            "address.location.coordinates": {
+              $near: {
+                $geometry: { type: "Point", coordinates: [lng, lat] },
+                $maxDistance: 4000,
+              },
+            },
+            status: statusConsts.RESOURCE_STATUS.AVAILABLE,
+            excluded: false,
+          },
+          projection: { name: 1, logo: 1, address: 1, "segment.name": 1 },
+          limit: 20,
+        });
+        // random 4
+        nearPlaces = companies.sort(() => Math.random() - 0.5).slice(0, 4);
+      }
+    }
+
+    return res.status(200).json({ segments, almostThere, nearPlaces });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @swagger
  * /v1/users/cards/{card_id}/request:
  *   post:
  *     summary: Request credit for a card
@@ -807,4 +909,5 @@ module.exports = {
   getProfile,
   updateProfile,
   cancelAccount,
+  getConsumerDashboard,
 };
