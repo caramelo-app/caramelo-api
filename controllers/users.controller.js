@@ -483,7 +483,11 @@ async function getConsumerDashboard(req, res, next) {
 
     // Cards with user's credits by company and completion ratio
     const userCredits = await creditHandler.list({
-      filter: { user_id: req.user._id, excluded: false, status: { $in: [statusConsts.CREDITS_STATUS.AVAILABLE, statusConsts.CREDITS_STATUS.USED] } },
+      filter: {
+        user_id: req.user._id,
+        excluded: false,
+        status: { $in: [statusConsts.CREDITS_STATUS.AVAILABLE, statusConsts.CREDITS_STATUS.USED] },
+      },
       projection: { card_id: 1, company_id: 1 },
     });
 
@@ -511,7 +515,13 @@ async function getConsumerDashboard(req, res, next) {
     const almostThere = completion
       .sort((a, b) => b.completion - a.completion)
       .slice(0, 3)
-      .map((c) => ({ _id: c._id, title: c.title, credits_needed: c.credits_needed, user_credits: c.user_credits, completion: c.completion }));
+      .map((c) => ({
+        _id: c._id,
+        title: c.title,
+        credits_needed: c.credits_needed,
+        user_credits: c.user_credits,
+        completion: c.completion,
+      }));
 
     // Nearby places (if location provided)
     let nearPlaces = [];
