@@ -2,6 +2,7 @@ const dateUtils = require("../utils/date.utils");
 const userModel = require("../models/user.model");
 const cardModel = require("../models/card.model");
 const creditModel = require("../models/credit.model");
+const segmentModel = require("../models/segment.model");
 const dbHandler = require("../utils/db-handler.utils");
 const companyModel = require("../models/company.model");
 const statusConsts = require("../constants/status.constants");
@@ -9,12 +10,12 @@ const roleConstants = require("../constants/roles.constants");
 
 const { ValidationError } = require("../infra/errors");
 const { localize } = require("../utils/localization.utils");
+const { haversineKm } = require("../utils/data.utils");
 
 const userHandler = dbHandler(userModel);
 const cardHandler = dbHandler(cardModel);
 const creditHandler = dbHandler(creditModel);
 const companyHandler = dbHandler(companyModel);
-const segmentModel = require("../models/segment.model");
 const segmentHandler = dbHandler(segmentModel);
 
 // Validation functions
@@ -486,7 +487,6 @@ async function getConsumerDashboard(req, res, next) {
       projection: { card_id: 1, company_id: 1 },
     });
 
-    const companyIds = [...new Set(userCredits.map((c) => c.company_id.toString()))];
     const cardIds = [...new Set(userCredits.map((c) => c.card_id.toString()))];
 
     const cards = await cardHandler.list({
@@ -519,7 +519,7 @@ async function getConsumerDashboard(req, res, next) {
       const lat = parseFloat(latitude);
       const lng = parseFloat(longitude);
       if (!isNaN(lat) && !isNaN(lng)) {
-        const companies = await companyHandler.list({
+        let companies = await companyHandler.list({
           filter: {
             "address.location.coordinates": {
               $near: {
@@ -532,6 +532,17 @@ async function getConsumerDashboard(req, res, next) {
           },
           projection: { name: 1, logo: 1, address: 1, "segment.name": 1 },
           limit: 20,
+        });
+        // attach distance
+        companies = (companies || []).map((c) => {
+          const coords = c?.address?.location?.coordinates;
+          if (Array.isArray(coords) && coords.length >= 2) {
+            const companyLng = parseFloat(coords[0]);
+            const companyLat = parseFloat(coords[1]);
+            const km = haversineKm(lat, lng, companyLat, companyLng);
+            return { ...c, distance_km: Math.round(km * 10) / 10 };
+          }
+          return c;
         });
         // random 4
         nearPlaces = companies.sort(() => Math.random() - 0.5).slice(0, 4);

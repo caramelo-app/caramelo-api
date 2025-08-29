@@ -1,5 +1,6 @@
 const dateUtils = require("../utils/date.utils");
 const mongoose = require("mongoose");
+const { haversineKm } = require("../utils/data.utils");
 const userModel = require("../models/user.model");
 const cardModel = require("../models/card.model");
 const creditModel = require("../models/credit.model");
@@ -222,7 +223,19 @@ async function exploreCompanies(req, res, next) {
       skip,
     };
 
-    const companies = await companyHandler.list(companyListOptions);
+    let companies = await companyHandler.list(companyListOptions);
+
+    // Attach approximate distance in km based on user coordinates
+    companies = (companies || []).map((c) => {
+      const coords = c?.address?.location?.coordinates;
+      if (Array.isArray(coords) && coords.length >= 2) {
+        const companyLng = parseFloat(coords[0]);
+        const companyLat = parseFloat(coords[1]);
+        const km = haversineKm(lat, lng, companyLat, companyLng);
+        return { ...c, distance_km: Math.round(km * 10) / 10 };
+      }
+      return c;
+    });
 
     return res.status(200).json(companies);
   } catch (error) {
