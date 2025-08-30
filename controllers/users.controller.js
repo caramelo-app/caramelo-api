@@ -211,7 +211,15 @@ async function getCards(req, res, next) {
 
     const credits = await creditHandler.list(creditHandlerOptions);
 
-    const companyIds = credits.map((credit) => credit.company_id);
+    // Deduplicate companies: users may have multiple credits for the same company
+    const uniqueCompanyIdMap = new Map();
+    for (const credit of credits) {
+      if (credit?.company_id) {
+        const key = credit.company_id.toString();
+        if (!uniqueCompanyIdMap.has(key)) uniqueCompanyIdMap.set(key, credit.company_id);
+      }
+    }
+    const companyIds = Array.from(uniqueCompanyIdMap.values());
 
     const companyHandlerOptions = {
       filter: {
@@ -230,32 +238,24 @@ async function getCards(req, res, next) {
 
     const companies = await companyHandler.list(companyHandlerOptions);
 
-    for (const credit of credits) {
-      const company = companies.find((company) => company._id.equals(credit.company_id));
-
-      if (!company) {
-        continue;
-      }
-
-      response.push({
-        company: {
-          _id: company._id,
-          name: company.name,
-          segment: {
-            name: company.segment.name,
-          },
-          logo: company.logo,
-          address: {
-            street: company.address.street,
-            number: company.address.number,
-            complement: company.address.complement,
-            neighborhood: company.address.neighborhood,
-            city: company.address.city,
-            state: company.address.state,
-          },
+    response = (companies || []).map((company) => ({
+      company: {
+        _id: company._id,
+        name: company.name,
+        segment: {
+          name: company.segment.name,
         },
-      });
-    }
+        logo: company.logo,
+        address: {
+          street: company.address.street,
+          number: company.address.number,
+          complement: company.address.complement,
+          neighborhood: company.address.neighborhood,
+          city: company.address.city,
+          state: company.address.state,
+        },
+      },
+    }));
 
     return res.status(200).json(response);
   } catch (error) {
