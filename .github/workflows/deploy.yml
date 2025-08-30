@@ -1,0 +1,83 @@
+name: Deploy API to Lightsail
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./caramelo-api
+        run: npm ci
+
+      - name: Run tests
+        working-directory: ./caramelo-api
+        run: npm test --silent
+
+      - name: Archive production artifacts
+        working-directory: ./caramelo-api
+        run: |
+          tar -czf release.tar.gz \
+            index.js \
+            package.json \
+            package-lock.json \
+            controllers \
+            infra \
+            models \
+            routes \
+            services \
+            utils \
+            constants \
+            aggregations \
+            templates \
+            locales
+
+      - name: Copy artifacts to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "caramelo-api/release.tar.gz"
+          target: "~/deploy/caramelo-api"
+
+      - name: Deploy on server via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            mkdir -p ~/apps/caramelo-api/releases ~/apps/caramelo-api/shared
+            mkdir -p ~/deploy/caramelo-api
+            mv -f ~/deploy/caramelo-api/release.tar.gz ~/apps/caramelo-api/releases/release.tar.gz
+            cd ~/apps/caramelo-api
+            ts=$(date +%Y%m%d%H%M%S)
+            mkdir -p releases/$ts
+            tar -xzf releases/release.tar.gz -C releases/$ts
+            rm -f releases/release.tar.gz
+            cd releases/$ts
+            npm ci --omit=dev
+            ln -sfn ~/apps/caramelo-api/shared/.env .env
+            pm2 stop caramelo-api || true
+            pm2 start index.js --name caramelo-api
+            pm2 save
+            # Optional: set PM2 to run on boot
+            pm2 startup systemd -u $USER --hp $HOME >/dev/null 2>&1 || true
+
