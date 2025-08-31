@@ -3,14 +3,13 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["gru1"],
   "functions": {
-    "api/index.js": {
-      "maxDuration": 300
-    }
+    "api/index.js": { "runtime": "nodejs20.x", "maxDuration": 300 }
   },
+  "redirects": [
+    { "source": "/", "destination": "/api", "permanent": false },
+    { "source": "/index.js", "destination": "/api", "permanent": false }
+  ],
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api"
-    }
+    { "source": "/api/(.*)", "destination": "/api" }
   ]
 }
