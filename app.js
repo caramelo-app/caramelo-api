@@ -25,8 +25,10 @@ async function ensureDb() {
   if (!dbPromise) dbPromise = connectDatabase();
   return dbPromise;
 }
-app.use(async (_req, _res, next) => {
+app.use(async (req, _res, next) => {
   try {
+    // Skip DB connection for lightweight health checks
+    if (req.path.includes("/ping")) return next();
     await ensureDb();
     next();
   } catch (e) {
@@ -65,6 +67,7 @@ app.use((req, res) => {
 });
 
 app.use((err, _req, res, _next) => {
+  console.error("Unhandled error:", err);
   const error = new InternalServerError({ cause: err });
   return res.status(error.status_code).json(error);
 });

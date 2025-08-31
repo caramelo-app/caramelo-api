@@ -11,12 +11,21 @@ class InternalServerError extends Error {
   }
 
   toJSON() {
-    return {
+    const payload = {
       name: this.name,
       message: this.message,
       action: this.action,
       status_code: this.status_code,
     };
+
+    if (process.env.EXPOSE_ERRORS === "true" && this.cause) {
+      payload.cause = {
+        message: this.cause.message,
+        stack: this.cause.stack,
+      };
+    }
+
+    return payload;
   }
 }
 
