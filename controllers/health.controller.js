@@ -56,6 +56,13 @@ async function health(req, res) {
   });
 }
 
+async function ping(req, res) {
+  return res.status(200).json({
+    status: "pong",
+  });
+}
+
 module.exports = {
   health,
+  ping
 };
