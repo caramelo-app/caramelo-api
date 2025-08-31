@@ -1,4 +1,3 @@
-// app.js
 require("dotenv").config();
 const i18n = require("i18n");
 const cors = require("cors");
@@ -27,7 +26,12 @@ async function ensureDb() {
   return dbPromise;
 }
 app.use(async (_req, _res, next) => {
-  try { await ensureDb(); next(); } catch (e) { next(e); }
+  try {
+    await ensureDb();
+    next();
+  } catch (e) {
+    next(e);
+  }
 });
 
 app.use(cors());
@@ -50,8 +54,7 @@ app.use(
   })
 );
 
-const mountPath = process.env.VERCEL ? "/" : "/api";
-app.use(mountPath, routes);
+app.use("/", routes);
 
 app.use((req, res) => {
   const error = new NotFoundError({

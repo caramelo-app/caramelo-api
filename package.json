@@ -2,7 +2,7 @@
   "name": "caramelo-api",
   "version": "1.0.0",
   "description": "API for Caramelo project",
-  "main": "index.js",
+  "main": "api/index.js",
   "engines": {
     "node": "20.x"
   },
