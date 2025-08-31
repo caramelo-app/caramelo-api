@@ -7,8 +7,8 @@
     "node": "20.x"
   },
   "scripts": {
-    "start": "node index.js",
-    "start:local": "npm run services:up && npm run services:wait:database && npm run migrations:up && nodemon index.js",
+    "start": "node server.js",
+    "start:local": "npm run services:up && npm run services:wait:database && npm run migrations:up && nodemon server.js",
     "test": "npx dotenv -e .env.test -- npm run services:up && npm run services:wait:database && npm run migrations:up && concurrently -n server,jest --kill-others -s command-jest \"npx dotenv -e .env.test -- node index.js\" \"npx dotenv -e .env.test -- jest --runInBand --verbose\"",
     "posttest": "npm run services:stop",
     "lint:prettier:check": "prettier --check .",
