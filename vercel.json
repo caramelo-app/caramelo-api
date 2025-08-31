@@ -9,21 +9,9 @@
       "maxDuration": 300
     }
   },
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/api",
-      "permanent": false
-    },
-    {
-      "source": "/index.js",
-      "destination": "/api",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
+      "source": "/(.*)",
       "destination": "/api"
     }
   ]
