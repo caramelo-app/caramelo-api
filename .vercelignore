@@ -1,0 +1,7 @@
+index.js
+tests/
+.eslintrc*
+.prettier*
+jest.config.*
+docker-compose*
+Dockerfile
