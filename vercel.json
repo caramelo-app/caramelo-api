@@ -1,3 +1,11 @@
 {
-	"rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+    "version": 2,
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "regions": ["gru1"],
+    "functions": {
+      "api/**/*.{js,ts}": {
+        "maxDuration": 300
+      }
+    },
+    "rewrites": [{ "source": "/", "destination": "/api" }]
 }
